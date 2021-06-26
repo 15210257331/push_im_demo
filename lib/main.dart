@@ -6,9 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/pages/home.dart';
 import 'package:push_im_demo/pages/login.dart';
+import 'package:push_im_demo/pages/splash_screen.dart';
 import 'package:push_im_demo/provider/app_provider.dart';
 import 'package:push_im_demo/provider/contact_provider.dart';
-import 'package:push_im_demo/utils/config.dart';
+import 'package:push_im_demo/config.dart';
 
 void main() async {
 
@@ -23,22 +24,28 @@ void main() async {
         child: Consumer2<AppProvider, ContactProvider>(
           builder: (context, appProvider, userInfoProvider, _) {
             Color _themeColor;
-            String colorKey = appProvider.themeColor;
-            if (themeColorMap[colorKey] != null) {
-              _themeColor = themeColorMap[colorKey];
-              print(_themeColor);
+            String themeColorKey = appProvider.themeColorKey;
+            if (appProvider.themeColorMap[themeColorKey] != null) {
+              _themeColor = appProvider.themeColorMap[themeColorKey];
             }
             return MaterialApp(
               title: 'Flutter Demo',
               debugShowCheckedModeBanner: false,
+              /// 同时设置 theme 和darkTheme 则跟随系统设置的深色或浅色模式自动取darkTheme或theme中的值，
+              /// 两个属性现在设置的值相同 则表明不管系统如何切换都显示同一套颜色
               theme: ThemeData(
+                brightness: Brightness.light,
                 primaryColor: _themeColor,
                 cardColor: _themeColor,
-                floatingActionButtonTheme: FloatingActionButtonThemeData(backgroundColor: _themeColor),
+              ),
+              darkTheme: ThemeData(
+                brightness: Brightness.dark,
+                primaryColor: _themeColor,
+                cardColor: _themeColor,
               ),
               initialRoute: "/",
               navigatorKey: Global.navigatorKey,
-              home: Global.userInfo != null ? Home() : Login(),
+              home: SplashScreen(),
               builder: EasyLoading.init(),
             );
           },

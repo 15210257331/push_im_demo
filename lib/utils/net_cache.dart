@@ -1,6 +1,6 @@
 import 'dart:collection';
 import 'package:dio/dio.dart';
-import 'package:push_im_demo/utils/config.dart';
+import 'package:push_im_demo/config.dart';
 import 'package:push_im_demo/utils/storage.dart';
 
 class CacheObject {

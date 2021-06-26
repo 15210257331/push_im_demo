@@ -43,7 +43,7 @@ class _NewsState extends State<News> with SingleTickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: Text('新闻'),
-        backgroundColor: Colors.blueAccent,
+        // backgroundColor: Colors.blueAccent,
         brightness: Brightness.dark,
         centerTitle: true,
         bottom: TabBar(

@@ -5,6 +5,8 @@ PODS:
   - fluttertoast (0.0.2):
     - Flutter
   - HydraAsync (2.0.6)
+  - image_picker (0.0.1):
+    - Flutter
   - install_plugin (0.0.1):
     - Flutter
   - package_info (0.0.1):
@@ -33,6 +35,7 @@ DEPENDENCIES:
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - Flutter (from `Flutter`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
+  - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - install_plugin (from `.symlinks/plugins/install_plugin/ios`)
   - package_info (from `.symlinks/plugins/package_info/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
@@ -56,6 +59,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
+  image_picker:
+    :path: ".symlinks/plugins/image_picker/ios"
   install_plugin:
     :path: ".symlinks/plugins/install_plugin/ios"
   package_info:
@@ -80,6 +85,7 @@ SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   fluttertoast: b644586ef3b16f67fae9a1f8754cef6b2d6b634b
   HydraAsync: 8d589bd725b0224f899afafc9a396327405f8063
+  image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
   install_plugin: a13e7ddd2bab0c701b48cd359c26d0394125b6fb
   package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c

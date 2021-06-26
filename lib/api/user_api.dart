@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:push_im_demo/model/user_info.dart';
 import 'package:push_im_demo/utils/http.dart';
 
@@ -9,11 +10,17 @@ class UserAPI {
     @required BuildContext context,
     dynamic params,
   }) async {
+    EasyLoading.show(status: 'loading...');
     var response = await HttpUtil().post(
       'https://fapi-smix1.t.blingabc.com/fts/open-api/foreign/v1/app-login',
       context: context,
       params: params,
     );
-    return UserInfo.fromJson(response);
+    EasyLoading.dismiss();
+    if(response['code'] == 10000) {
+      return UserInfo.fromJson(response['data']);
+    } else {
+      EasyLoading.showError(response['msg']);
+    }
   }
 }

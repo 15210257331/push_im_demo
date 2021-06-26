@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
-import 'package:push_im_demo/utils/config.dart';
+import 'package:push_im_demo/config.dart';
 import 'package:push_im_demo/model/user_info.dart';
 import 'package:push_im_demo/utils/http.dart';
 import 'package:push_im_demo/utils/storage.dart';
@@ -21,7 +21,7 @@ class Global {
   static RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
   /// 已登录用户信息
-  static UserInfo userInfo = UserInfo();
+  static UserInfo userInfo;
 
   /// 发布渠道
   static String channel = "xiaomi";
@@ -40,9 +40,6 @@ class Global {
 
   /// 是否第一次打开
   static bool isFirstOpen = false;
-
-  /// 是否离线登录
-  static bool isOfflineLogin = false;
 
   /// 是否 release
   static bool get isRelease => bool.fromEnvironment("dart.vm.product");
@@ -75,11 +72,10 @@ class Global {
       StorageUtil().setBool(STORAGE_DEVICE_ALREADY_OPEN_KEY, true);
     }
 
-    // 读取离线用户信息
-    var _profileJSON = StorageUtil().getJSON(STORAGE_USER_PROFILE_KEY);
-    if (_profileJSON != null) {
-      userInfo = UserInfo.fromJson(_profileJSON);
-      isOfflineLogin = true;
+    // 读取用户信息，判断是否登陆
+    var data = StorageUtil().getJSON(STORAGE_USER_PROFILE_KEY);
+    if (data != null) {
+      userInfo = UserInfo.fromJson(data);
     }
 
     /// 开启DEBUG
@@ -89,7 +85,7 @@ class Global {
     /// 香港：tpns.hk.tencent.com
     /// 新加坡：tpns.sgp.tencent.com
     /// 上海：tpns.sh.tencent.com
-    //XgFlutterPlugin().configureClusterDomainName("tpns.hk.tencent.com");
+    /// XgFlutterPlugin().configureClusterDomainName("tpns.hk.tencent.com");
 
     /// 启动TPNS服务
     if(Platform.isAndroid) {
@@ -127,7 +123,7 @@ class Global {
       xgPushDidSetBadge: (String msg) async {
         print("flutter xgPushDidSetBadge: $msg");
         /// 在此可设置应用角标
-        XgFlutterPlugin().setAppBadge(5);
+        XgFlutterPlugin().setAppBadge(0);
       },
       /// 通知点击时的回调
       xgPushClickAction: (Map<String, dynamic> msg) async {
@@ -139,7 +135,6 @@ class Global {
   // 持久化用户信息
   static Future<bool> saveProfile(UserInfo userResponse) {
     userInfo = userResponse;
-    return StorageUtil()
-        .setJSON(STORAGE_USER_PROFILE_KEY, userResponse.toJson());
+    return StorageUtil().setJSON(STORAGE_USER_PROFILE_KEY, userResponse.toJson());
   }
 }

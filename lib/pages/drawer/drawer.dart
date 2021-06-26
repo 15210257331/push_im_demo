@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:push_im_demo/utils/config.dart';
+import 'package:push_im_demo/config.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/pages/login.dart';
 import 'package:push_im_demo/provider/app_provider.dart';
@@ -27,7 +27,7 @@ class _DrawerState extends State<DrawerPage> {
                   child: ListView(
                     padding: EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 20),
                     children: [
-                      buildSection(),
+                      // buildSection(),
                       buildContent(),
                       buildSetting(),
                       buildLogout(),
@@ -45,48 +45,29 @@ class _DrawerState extends State<DrawerPage> {
         builder: (context, userInfoProvider, _) {
           return DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.red,
-              image: DecorationImage(
-                image: AssetImage("assets/images/drawer_bg.jpeg"),
-                fit: BoxFit.fill
-              )
+              color: Theme.of(context).primaryColor,
+              // image: DecorationImage(
+              //   image: AssetImage("assets/images/drawer_bg.jpeg"),
+              //   fit: BoxFit.fill
+              // )
             ),
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.only(left: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 35,
-                    // backgroundImage: NetworkImage(userInfoProvider?.userInfo?.avatar),
+              padding: EdgeInsets.only(top: 10),
+              child: ListTile(
+                leading: CircleAvatar(
+                  radius: 30,
+                  backgroundImage: NetworkImage(Global?.userInfo?.avatar),
+                ),
+                title: Text(Global?.userInfo?.englishName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white
                   ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('234234',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text('1212',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  )
-                ],
+                ),
               ),
             )
           );
@@ -106,7 +87,7 @@ class _DrawerState extends State<DrawerPage> {
       child: Wrap(
         spacing: 20.0, // 主轴(水平)方向间距
         runSpacing: 15.0, // 纵轴（垂直）方向间距
-        alignment: WrapAlignment.start, //沿主轴方向居中
+        alignment: WrapAlignment.spaceBetween, //沿主轴方向居中
         children: <Widget>[
           Column(
             children: [
@@ -135,7 +116,7 @@ class _DrawerState extends State<DrawerPage> {
           Column(
             children: [
               Icon(Icons.message, color: Colors.red,),
-              Text('我的好友')
+              Text('收藏')
             ],
           ),
         ],
@@ -154,15 +135,6 @@ class _DrawerState extends State<DrawerPage> {
       margin: EdgeInsets.only(top: 10, bottom: 10),
       child: Column(
         children: [
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('消息中心'),
-            trailing: Icon(Icons.chevron_right),
-          ),
-          Divider(
-            height: 1,
-            color: Colors.grey,
-          ),
           ListTile(
             leading: Icon(Icons.settings),
             title: Text('消息中心'),
@@ -212,45 +184,38 @@ class _DrawerState extends State<DrawerPage> {
             title: Text('夜间模式'),
             trailing: Switch(value: false, onChanged: (_) => {}),
           ),
-          ExpansionTile(
-            leading: Icon(Icons.color_lens),
-            title: Text('颜色主题'),
-            initiallyExpanded: false,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: themeColorMap.keys.map((key) {
-                    Color value = themeColorMap[key];
-                    return InkWell(
-                      onTap: () async {
-                        setState(() {
-                          _colorKey = key;
-                        });
-                        // SharedPreferences prefs = await SharedPreferences.getInstance();
-                        // await prefs.setString('key_theme_color', key);
-                        Provider.of<AppProvider>(context, listen: false)
-                            .setTheme(key);
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        color: value,
-                        child: _colorKey == key
-                            ? Icon(
-                                Icons.done,
-                                color: Colors.white,
-                              )
-                            : null,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              )
-            ],
-          )
+          Consumer<AppProvider>(
+            builder: (context, appProvider, _) {
+              return ExpansionTile(
+                leading: Icon(Icons.color_lens),
+                title: Text('主题设置'),
+                initiallyExpanded: false,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: appProvider.themeColorMap.keys.map((key) {
+                        Color colorItem = appProvider.themeColorMap[key];
+                        return InkWell(
+                          onTap: () async {
+                            Provider.of<AppProvider>(context, listen: false).setTheme(key);
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            color: colorItem,
+                            child: appProvider.themeColorKey == key ? Icon(Icons.done, color: Colors.white) : null,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  )
+                ],
+              );
+            }
+          ),
         ],
       ),
     );

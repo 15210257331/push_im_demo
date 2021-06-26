@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:push_im_demo/utils/config.dart';
+import 'package:push_im_demo/config.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/utils/net_cache.dart';
 import 'package:push_im_demo/widgets/toast.dart';
@@ -70,10 +70,13 @@ class HttpUtil {
     dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
 
     // 添加拦截器
-    dio.interceptors
-        .add(InterceptorsWrapper(onRequest: (RequestOptions options) {
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (RequestOptions options) {
       return options; //continue
     }, onResponse: (Response response) {
+      // if(response.data['code'] != 10000) {
+      //   // 错误提示
+      //   toastInfo(msg: response.data['msg']);
+      // }
       return response; // continue
     }, onError: (DioError e) {
       ErrorEntity eInfo = createErrorEntity(e);
@@ -235,16 +238,16 @@ class HttpUtil {
   /// cacheKey 缓存key
   /// cacheDisk 是否磁盘缓存
   Future get(
-      String path, {
-        @required BuildContext context,
-        dynamic params,
-        Options options,
-        bool refresh = false,
-        bool noCache = !CACHE_ENABLE,
-        bool list = false,
-        String cacheKey,
-        bool cacheDisk = false,
-      }) async {
+    String path, {
+    @required BuildContext context,
+    dynamic params,
+    Options options,
+    bool refresh = false,
+    bool noCache = !CACHE_ENABLE,
+    bool list = false,
+    String cacheKey,
+    bool cacheDisk = false,
+  }) async {
     Options requestOptions = options ?? Options();
     requestOptions = requestOptions.merge(extra: {
       "context": context,
@@ -268,11 +271,11 @@ class HttpUtil {
 
   /// restful post 操作
   Future post(
-      String path, {
-        @required BuildContext context,
-        dynamic params,
-        Options options,
-      }) async {
+    String path, {
+    @required BuildContext context,
+    dynamic params,
+    Options options,
+  }) async {
     Options requestOptions = options ?? Options();
     requestOptions = requestOptions.merge(extra: {
       "context": context,
@@ -288,11 +291,11 @@ class HttpUtil {
 
   /// restful put 操作
   Future put(
-      String path, {
-        @required BuildContext context,
-        dynamic params,
-        Options options,
-      }) async {
+    String path, {
+    @required BuildContext context,
+    dynamic params,
+    Options options,
+  }) async {
     Options requestOptions = options ?? Options();
     requestOptions = requestOptions.merge(extra: {
       "context": context,
@@ -308,11 +311,11 @@ class HttpUtil {
 
   /// restful patch 操作
   Future patch(
-      String path, {
-        @required BuildContext context,
-        dynamic params,
-        Options options,
-      }) async {
+    String path, {
+    @required BuildContext context,
+    dynamic params,
+    Options options,
+  }) async {
     Options requestOptions = options ?? Options();
     requestOptions = requestOptions.merge(extra: {
       "context": context,
@@ -328,11 +331,11 @@ class HttpUtil {
 
   /// restful delete 操作
   Future delete(
-      String path, {
-        @required BuildContext context,
-        dynamic params,
-        Options options,
-      }) async {
+    String path, {
+    @required BuildContext context,
+    dynamic params,
+    Options options,
+  }) async {
     Options requestOptions = options ?? Options();
     requestOptions = requestOptions.merge(extra: {
       "context": context,
@@ -348,11 +351,11 @@ class HttpUtil {
 
   /// restful post form 表单提交操作
   Future postForm(
-      String path, {
-        @required BuildContext context,
-        dynamic params,
-        Options options,
-      }) async {
+    String path, {
+    @required BuildContext context,
+    dynamic params,
+    Options options,
+  }) async {
     Options requestOptions = options ?? Options();
     requestOptions = requestOptions.merge(extra: {
       "context": context,
