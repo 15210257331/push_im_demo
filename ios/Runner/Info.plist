@@ -53,5 +53,11 @@
     <string>BlingABC needs your approval to enable access to your photos.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>BlingABC needs your approval to enable access to your photos.</string>
+
+    <key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSAllowsArbitraryLoads</key>
+      <true/>
+    </dict>
 </dict>
 </plist>

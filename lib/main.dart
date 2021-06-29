@@ -10,6 +10,7 @@ import 'package:push_im_demo/pages/splash_screen.dart';
 import 'package:push_im_demo/provider/app_provider.dart';
 import 'package:push_im_demo/provider/contact_provider.dart';
 import 'package:push_im_demo/config.dart';
+import 'package:push_im_demo/provider/im_provider.dart';
 
 void main() async {
 
@@ -20,6 +21,7 @@ void main() async {
         providers: [
           ChangeNotifierProvider<AppProvider>(create: (_) => AppProvider()),
           ChangeNotifierProvider<ContactProvider>(create: (_) => ContactProvider()),
+          ChangeNotifierProvider<ImProvider>(create: (_) => ImProvider()),
         ],
         child: Consumer2<AppProvider, ContactProvider>(
           builder: (context, appProvider, userInfoProvider, _) {

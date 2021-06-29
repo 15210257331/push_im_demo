@@ -54,6 +54,18 @@ dependencies:
   # 图片选择
   image_picker: ^0.6.7+22
 
+  # 图片预览
+  photo_view: 0.10.2
+
+  # 生成视频缩略图
+  video_thumbnail: ^0.2.5
+
+  # 视频播放
+  video_player: 1.0.0
+
+  # 音频播放
+  audioplayers: ^0.16.0
+
   # 侧边滑动
   flutter_slidable: ^0.5.7
 

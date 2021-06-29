@@ -50,9 +50,7 @@ class HomeState extends State<Home> {
       },
     );
     if(initRes.code == 0){
-      //初始化成功
-      //以下监听可按需设置,为防止遗漏消息，请在登录前设置监听。
-      //高级消息监听
+      /// 以下监听可按需设置,为防止遗漏消息，请在登录前设置监听。高级消息监听
       timManager.getMessageManager().addAdvancedMsgListener(
         listener: (data) {
           print(data);

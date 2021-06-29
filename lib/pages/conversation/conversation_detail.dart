@@ -1,15 +1,28 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:push_im_demo/global.dart';
-import 'package:push_im_demo/pages/conversation/message_item_detail.dart';
+import 'package:push_im_demo/pages/conversation/file_message.dart';
+import 'package:push_im_demo/pages/conversation/image_message.dart';
+import 'package:push_im_demo/pages/conversation/sound_message.dart';
+import 'package:push_im_demo/pages/conversation/text_message.dart';
+import 'package:push_im_demo/pages/conversation/video_message.dart';
+import 'package:push_im_demo/provider/im_provider.dart';
+import 'package:push_im_demo/utils/file_utils.dart';
+import 'package:push_im_demo/widgets/photo_view_gallery.dart';
+import 'package:tencent_im_sdk_plugin/enum/message_elem_type.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_callback.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_conversation.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_message.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_value_callback.dart';
 import 'package:tencent_im_sdk_plugin/tencent_im_sdk_plugin.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ConversationDetail extends StatefulWidget {
 
@@ -21,7 +34,7 @@ class ConversationDetail extends StatefulWidget {
   _ConversationDetailState createState() => _ConversationDetailState();
 }
 
-class _ConversationDetailState extends State<ConversationDetail> {
+class _ConversationDetailState extends State<ConversationDetail> with SingleTickerProviderStateMixin {
 
   TextEditingController inputController = TextEditingController();
 
@@ -30,13 +43,14 @@ class _ConversationDetailState extends State<ConversationDetail> {
   ScrollController scrollController = ScrollController(keepScrollOffset: false);
 
   /// 更多操作的高度监听
-  ValueNotifier<double> valueNotifier = ValueNotifier(0);
+  ValueNotifier<double> moreActionHeightNotifier = ValueNotifier(0);
+
+  /// 表情区域的高度监听
+  ValueNotifier<double> emojiHeightNotifier = ValueNotifier(0);
 
   V2TimConversation conversationData;
 
   List<V2TimMessage> messageList = [];
-
-  File image;
 
   @override
   void initState() {
@@ -45,14 +59,21 @@ class _ConversationDetailState extends State<ConversationDetail> {
 
     });
     scrollController.addListener(() {
-      // if(focusNode.hasFocus) {
-      // focusNode.unfocus();
+      // print(scrollController.offset);
+      // if(scrollController.offset >= 0 && focusNode.hasFocus) {
+      //   focusNode.unfocus();
       // }
     });
     focusNode.addListener(() {
       /// 输入框得到焦点
       if(focusNode.hasFocus) {
         scrollToBottom();
+        if(moreActionHeightNotifier.value > 0) {
+          moreActionHeightNotifier.value = 0;
+        }
+        if(emojiHeightNotifier.value > 0) {
+          emojiHeightNotifier.value = 0;
+        }
       }
     });
     getC2CHistoryMessageList();
@@ -93,7 +114,6 @@ class _ConversationDetailState extends State<ConversationDetail> {
     );
   }
 
-
   /// 消息内容滚动到最下边
   scrollToBottom() {
     scrollController.animateTo(0, duration: Duration(milliseconds: 200), curve: Curves.linear);
@@ -101,7 +121,54 @@ class _ConversationDetailState extends State<ConversationDetail> {
 
   /// 显示更多操作区域
   void showMoreAction() {
-    valueNotifier.value = 220.00;
+    if(focusNode.hasFocus) {
+      focusNode.unfocus();
+    }
+    emojiHeightNotifier.value = 0;
+    Timer.periodic(const Duration(milliseconds: 1), (timer) {
+      moreActionHeightNotifier.value += 2;
+      if(moreActionHeightNotifier.value >= 220) {
+        moreActionHeightNotifier.value = 220;
+        timer.cancel();
+      }
+    });
+  }
+
+  /// 隐藏更多操作区域
+  void hideMoreAction() {
+    Timer.periodic(const Duration(milliseconds: 1), (timer) {
+      moreActionHeightNotifier.value -= 2;
+      if(moreActionHeightNotifier.value <= 0) {
+        moreActionHeightNotifier.value = 0;
+        timer.cancel();
+      }
+    });
+  }
+
+  /// 显示emoji区域
+  void showEmoji() {
+    if(focusNode.hasFocus) {
+      focusNode.unfocus();
+    }
+    moreActionHeightNotifier.value = 0;
+    Timer.periodic(const Duration(milliseconds: 1), (timer) {
+      emojiHeightNotifier.value += 2;
+      if(emojiHeightNotifier.value >= 200) {
+        emojiHeightNotifier.value = 200;
+        timer.cancel();
+      }
+    });
+  }
+
+  /// 隐藏emoji操作区域
+  void hideEmoji() {
+    Timer.periodic(const Duration(milliseconds: 1), (timer) {
+      emojiHeightNotifier.value -= 2;
+      if(emojiHeightNotifier.value <= 0) {
+        emojiHeightNotifier.value = 0;
+        timer.cancel();
+      }
+    });
   }
 
   /// 发送文本消息
@@ -125,8 +192,9 @@ class _ConversationDetailState extends State<ConversationDetail> {
 
   /// 发送图片消息
   sendImageMessage() async {
+    File selectedImage = await FileUtils.getFile(type: 'image');
     V2TimValueCallback<V2TimMessage> res = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendImageMessage(
-      imagePath: image.path,
+      imagePath: selectedImage.path,
       receiver: conversationData.userID,
       groupID: "",
       // priority: priority,
@@ -141,21 +209,39 @@ class _ConversationDetailState extends State<ConversationDetail> {
     }
   }
 
-  Future getImage() async {
-    await [Permission.camera,].request();
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
-    ].request();
-    print(statuses[Permission.camera]);
-    final PickedFile pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
-    setState(() {
-      if (pickedFile != null) {
-        image = File(pickedFile.path);
-        sendImageMessage();
-      } else {
-        print('No image selected.');
-      }
-    });
+  /// 发送视频消息
+  sendVideoMessage() async {
+    File selectedVideo = await FileUtils.getFile(type: 'video');
+    if(selectedVideo == null) {
+      return;
+    }
+    // 获取snapshotPath，type，duration
+    String tempPath = (await getTemporaryDirectory()).path;
+    /// 生成封面缩略图
+    final fileName = await VideoThumbnail.thumbnailFile(
+      video: selectedVideo.path,
+      thumbnailPath: tempPath,
+      imageFormat: ImageFormat.JPEG,
+      maxWidth: 128, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
+      quality: 25,
+    );
+    V2TimValueCallback<V2TimMessage> res = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendVideoMessage(
+      videoFilePath: selectedVideo.path,
+      type: selectedVideo.path.split('.').last,
+      snapshotPath: "$fileName",
+      duration: 10,
+      receiver: conversationData.userID,
+      // groupID: groupID.length > 0 ? groupID.first : "",
+      // priority: priority,
+      // onlineUserOnly: onlineUserOnly,
+      // isExcludedFromUnreadCount: isExcludedFromUnreadCount,
+    );
+    if(res.code == 0) {
+      setState(() {
+        messageList.insert(0,res.data);
+        scrollToBottom();
+      });
+    }
   }
 
   @override
@@ -182,11 +268,13 @@ class _ConversationDetailState extends State<ConversationDetail> {
       ),
       body: GestureDetector(
         onTap: () {
+          /// 点击空白  如果键盘弹出收起键盘 如果更多区域弹出隐藏 如果emoji 弹出 隐藏
           if(focusNode.hasFocus) {
-            /// 点击空白收起键盘
             focusNode.unfocus();
-          } else {
-            valueNotifier.value = 0;
+          } else if(moreActionHeightNotifier.value > 0) {
+            hideMoreAction();
+          } else if(emojiHeightNotifier.value > 0) {
+            hideEmoji();
           }
         },
         child: Container(
@@ -196,7 +284,8 @@ class _ConversationDetailState extends State<ConversationDetail> {
             children: [
               buildChatBody(),
               buildAction(),
-              buildMoreAction()
+              buildMoreAction(),
+              buildEmojiSection(),
             ],
           ),
         ),
@@ -220,7 +309,7 @@ class _ConversationDetailState extends State<ConversationDetail> {
                mainAxisAlignment: MainAxisAlignment.end,
                crossAxisAlignment: CrossAxisAlignment.start,
                children: [
-                 MessageItemDetail(v2TimMessage:messageList[index]),
+                 buildMessageItem(messageList[index]),
                  CircleAvatar(
                    radius: 23,
                    backgroundImage: NetworkImage(messageList[index].faceUrl),
@@ -239,7 +328,7 @@ class _ConversationDetailState extends State<ConversationDetail> {
                    radius: 23,
                    backgroundImage: NetworkImage(conversationData?.faceUrl),
                  ),
-                 MessageItemDetail(v2TimMessage:messageList[index]),
+                 buildMessageItem(messageList[index]),
                ],
              ),
            );
@@ -249,7 +338,30 @@ class _ConversationDetailState extends State<ConversationDetail> {
     );
   }
 
-  /// 构建底部区域
+  Widget buildMessageItem(V2TimMessage v2TimMessage) {
+    switch (v2TimMessage.elemType) {
+      case MessageElemType.V2TIM_ELEM_TYPE_TEXT:
+        return TextMessage(v2TimMessage: v2TimMessage,);
+      case MessageElemType.V2TIM_ELEM_TYPE_IMAGE:
+        return ImageMessage(v2TimMessage: v2TimMessage);
+      case MessageElemType.V2TIM_ELEM_TYPE_SOUND:
+        return SoundMessage(v2TimMessage: v2TimMessage);
+      case MessageElemType.V2TIM_ELEM_TYPE_VIDEO:
+        return VideoMessage(v2TimMessage: v2TimMessage);
+      case MessageElemType.V2TIM_ELEM_TYPE_FILE:
+        return FileMessage(v2TimMessage: v2TimMessage);
+      case MessageElemType.V2TIM_ELEM_TYPE_FACE:
+        return TextMessage(v2TimMessage: v2TimMessage);
+      default:
+        return Container(
+            height: 40,
+            child: Center(child: Text("MsgBodyTypeError")
+            )
+        );
+    }
+  }
+
+  /// 构建底部操作区域
   Widget buildAction() {
     return Container(
       height: 90,
@@ -291,7 +403,7 @@ class _ConversationDetailState extends State<ConversationDetail> {
           ),
           GestureDetector(
             onTap: () {
-              showMoreAction();
+              showEmoji();
             },
             child: Container(
               margin: EdgeInsets.only(left: 10),
@@ -303,6 +415,9 @@ class _ConversationDetailState extends State<ConversationDetail> {
           ),
           GestureDetector(
             onTap: () {
+              if(focusNode.hasFocus) {
+                focusNode.unfocus();
+              }
               showMoreAction();
             },
             child: Container(
@@ -318,10 +433,73 @@ class _ConversationDetailState extends State<ConversationDetail> {
     );
   }
 
+  /// 构建表情选择区域
+  Widget buildEmojiSection() {
+    return ValueListenableBuilder(
+        valueListenable: emojiHeightNotifier,
+        builder: (BuildContext context, double value, Widget child) {
+          return FutureBuilder(
+              future: DefaultAssetBundle.of(context).loadString("assets/json/emoji.json"),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  List<dynamic> data = json.decode(snapshot.data.toString());
+                  return Stack(
+                    children: <Widget>[
+                      Container(
+                        height: value,
+                        padding: EdgeInsets.all(5),
+                        color: Colors.white,
+                        child: GridView.custom(
+                          padding: EdgeInsets.all(3),
+                          shrinkWrap: true,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 8,
+                            mainAxisSpacing: 0.5,
+                            crossAxisSpacing: 6.0,
+                          ),
+                          childrenDelegate: SliverChildBuilderDelegate((context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                String value = inputController.value.text +  String.fromCharCode(data[index]["unicode"]);
+                                inputController.text = value;
+                                setState(() {});
+                              },
+                              child: Center(
+                                child: Text(
+                                  String.fromCharCode(data[index]["unicode"]),
+                                  style: TextStyle(fontSize: 33),
+                                ),
+                              ),
+                            );
+                          },
+                            childCount: data.length,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                          bottom: 20,
+                          right: 30,
+                          child: GestureDetector(
+                            onTap: () {
+                              sendTextMessage();
+                            },
+                            child: Icon(Icons.send_rounded,size: 40,),
+                          )
+                      )
+                    ],
+                  );
+                }
+                return CircularProgressIndicator();
+              });
+        }
+    );
+
+  }
+
   ///  构建更多操作区域
   Widget buildMoreAction() {
     return ValueListenableBuilder(
-        valueListenable: valueNotifier,
+        valueListenable: moreActionHeightNotifier,
         builder: (BuildContext context, double value, Widget child) {
           return Container(
             decoration: BoxDecoration(
@@ -341,8 +519,8 @@ class _ConversationDetailState extends State<ConversationDetail> {
               runSpacing: 10.0, // 纵轴（垂直）方向间距
               alignment: WrapAlignment.spaceBetween, //沿主轴方向居中
               children: <Widget>[
-                buildMoreActionItem(title: 'picture', icon: Icons.picture_in_picture_outlined, onTap: getImage),
-                buildMoreActionItem(title: 'video', icon: Icons.video_call_sharp),
+                buildMoreActionItem(title: 'picture', icon: Icons.picture_in_picture_outlined, onTap: sendImageMessage),
+                buildMoreActionItem(title: 'video', icon: Icons.video_call_sharp, onTap: sendVideoMessage),
                 buildMoreActionItem(title: 'file', icon: Icons.file_copy_rounded),
                 buildMoreActionItem(title: 'audio', icon: Icons.keyboard_voice_sharp),
                 buildMoreActionItem(title: 'location', icon: Icons.wrong_location_sharp),
