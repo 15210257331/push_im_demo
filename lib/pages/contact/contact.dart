@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:push_im_demo/global.dart';
-import 'package:push_im_demo/pages/contact/contact_add.dart';
-import 'package:push_im_demo/pages/contact/contact_detail.dart';
+import 'package:push_im_demo/pages/contact/black_list.dart';
+import 'package:push_im_demo/pages/contact/add_friend.dart';
+import 'package:push_im_demo/pages/contact/friend_info.dart';
 import 'package:push_im_demo/pages/conversation/conversation_detail.dart';
 import 'package:push_im_demo/pages/drawer/drawer.dart';
 import 'package:push_im_demo/provider/contact_provider.dart';
@@ -57,12 +58,22 @@ class _ContactState extends State<Contact> {
   @override
   void initState() {
     super.initState();
-    // getFriendList();
   }
 
-  /// 获取好友列表
-  getFriendList() async {
-    Provider.of<ContactProvider>(context, listen: false).loadFriendList();
+  goFriendNotice() {
+
+  }
+
+  goGroup() {
+
+  }
+
+  goBlackList() {
+    Global.navigatorKey.currentState.push(
+      MaterialPageRoute(
+        builder: (context) => BlackList(),
+      ),
+    );
   }
 
   @override
@@ -81,7 +92,7 @@ class _ContactState extends State<Contact> {
               onTap: () {
                 Global.navigatorKey.currentState.push(
                   MaterialPageRoute(
-                      builder: (context) => ContactAdd(),
+                      builder: (context) => AddFriend(),
                   ),
                 );
               },
@@ -103,9 +114,9 @@ class _ContactState extends State<Contact> {
             children: [
               Column(
                 children: [
-                  buildFixItem('新的朋友', true),
-                  buildFixItem('我的群聊', true),
-                  buildFixItem('黑名单', false),
+                  buildFixItem(title: '好友通知', onTap: goFriendNotice),
+                  buildFixItem(title: '我的群聊', onTap: goGroup),
+                  buildFixItem(title: '黑名单', border: false,onTap: goBlackList),
                   Expanded(
                     child: buildFriendList(),
                   )
@@ -155,9 +166,9 @@ class _ContactState extends State<Contact> {
     );
   }
 
-  Widget buildFixItem(String title, bool border) {
+  Widget buildFixItem({String title, bool border= true, Function onTap}) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         padding: EdgeInsets.only(left: 10, right: 10),
         color: Colors.white,
@@ -197,7 +208,7 @@ class _ContactState extends State<Contact> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ContactDetail(
+                      builder: (context) => FriendInfo(
                           userID: friendList[index]?.userID)
                   )
               );

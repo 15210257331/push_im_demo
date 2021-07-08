@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:push_im_demo/pages/conversation/message_item_body.dart';
 import 'package:push_im_demo/provider/conversation_provider.dart';
 import 'package:push_im_demo/utils/file_utils.dart';
-import 'package:push_im_demo/widgets/toast.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_callback.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_conversation.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_message.dart';
@@ -34,11 +34,9 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
 
   ScrollController scrollController = ScrollController(keepScrollOffset: false);
 
-  /// 更多操作的高度监听
-  ValueNotifier<double> moreActionHeightNotifier = ValueNotifier(0);
+  bool isShowMoreAction = false;
 
-  /// 表情区域的高度监听
-  ValueNotifier<double> emojiHeightNotifier = ValueNotifier(0);
+  bool isShowEmojiSection = false;
 
   V2TimConversation conversationData;
 
@@ -58,12 +56,14 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
       /// 输入框得到焦点
       if(focusNode.hasFocus) {
         scrollToBottom();
-        if(moreActionHeightNotifier.value > 0) {
-          moreActionHeightNotifier.value = 0;
-        }
-        if(emojiHeightNotifier.value > 0) {
-          emojiHeightNotifier.value = 0;
-        }
+        setState(() {
+          if(isShowMoreAction == true) {
+            isShowMoreAction = false;
+          }
+          if(isShowEmojiSection == true) {
+            isShowEmojiSection = false;
+          }
+        });
       }
     });
     getC2CHistoryMessageList();
@@ -117,24 +117,11 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
     if(focusNode.hasFocus) {
       focusNode.unfocus();
     }
-    emojiHeightNotifier.value = 0;
-    Timer.periodic(const Duration(milliseconds: 1), (timer) {
-      moreActionHeightNotifier.value += 2;
-      if(moreActionHeightNotifier.value >= 220) {
-        moreActionHeightNotifier.value = 220;
-        timer.cancel();
+    setState(() {
+      if(isShowEmojiSection == true) {
+        isShowEmojiSection = false;
       }
-    });
-  }
-
-  /// 隐藏更多操作区域
-  void hideMoreAction() {
-    Timer.periodic(const Duration(milliseconds: 1), (timer) {
-      moreActionHeightNotifier.value -= 2;
-      if(moreActionHeightNotifier.value <= 0) {
-        moreActionHeightNotifier.value = 0;
-        timer.cancel();
-      }
+      isShowMoreAction = true;
     });
   }
 
@@ -143,24 +130,11 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
     if(focusNode.hasFocus) {
       focusNode.unfocus();
     }
-    moreActionHeightNotifier.value = 0;
-    Timer.periodic(const Duration(milliseconds: 1), (timer) {
-      emojiHeightNotifier.value += 2;
-      if(emojiHeightNotifier.value >= 200) {
-        emojiHeightNotifier.value = 200;
-        timer.cancel();
+    setState(() {
+      if(isShowMoreAction == true) {
+        isShowMoreAction = false;
       }
-    });
-  }
-
-  /// 隐藏emoji操作区域
-  void hideEmoji() {
-    Timer.periodic(const Duration(milliseconds: 1), (timer) {
-      emojiHeightNotifier.value -= 2;
-      if(emojiHeightNotifier.value <= 0) {
-        emojiHeightNotifier.value = 0;
-        timer.cancel();
-      }
+      isShowEmojiSection = true;
     });
   }
 
@@ -260,7 +234,7 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
           scrollToBottom();
         });
       } catch (err) {
-        toastInfo(msg: '发送失败');
+        EasyLoading.showError('发送失败');
       }
     } else {
       // User canceled the picker
@@ -291,13 +265,17 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
       ),
       body: GestureDetector(
         onTap: () {
-          /// 点击空白  如果键盘弹出收起键盘 如果更多区域弹出隐藏 如果emoji 弹出 隐藏
+          /// 点击空白 如果键盘弹出收起键盘 如果更多区域弹出隐藏 如果emoji 弹出 隐藏
           if(focusNode.hasFocus) {
             focusNode.unfocus();
-          } else if(moreActionHeightNotifier.value > 0) {
-            hideMoreAction();
-          } else if(emojiHeightNotifier.value > 0) {
-            hideEmoji();
+          } else if(isShowMoreAction == true) {
+            setState(() {
+              isShowMoreAction = false;
+            });
+          } else if(isShowEmojiSection == true) {
+            setState(() {
+              isShowEmojiSection = false;
+            });
           }
         },
         child: Container(
@@ -404,9 +382,6 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
           ),
           GestureDetector(
             onTap: () {
-              if(focusNode.hasFocus) {
-                focusNode.unfocus();
-              }
               showMoreAction();
             },
             child: Container(
@@ -424,99 +399,100 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
 
   /// 构建表情选择区域
   Widget buildEmojiSection() {
-    return ValueListenableBuilder(
-        valueListenable: emojiHeightNotifier,
-        builder: (BuildContext context, double value, Widget child) {
-          return FutureBuilder(
-              future: DefaultAssetBundle.of(context).loadString("assets/json/emoji.json"),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  List<dynamic> data = json.decode(snapshot.data.toString());
-                  return Stack(
-                    children: <Widget>[
-                      Container(
-                        height: value,
-                        padding: EdgeInsets.all(5),
-                        color: Colors.white,
-                        child: GridView.custom(
-                          padding: EdgeInsets.all(3),
-                          shrinkWrap: true,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 8,
-                            mainAxisSpacing: 0.5,
-                            crossAxisSpacing: 6.0,
-                          ),
-                          childrenDelegate: SliverChildBuilderDelegate((context, index) {
-                            return GestureDetector(
-                              onTap: () {
-                                String value = inputController.value.text +  String.fromCharCode(data[index]["unicode"]);
-                                inputController.text = value;
-                                setState(() {});
-                              },
-                              child: Center(
-                                child: Text(
-                                  String.fromCharCode(data[index]["unicode"]),
-                                  style: TextStyle(fontSize: 33),
-                                ),
-                              ),
-                            );
-                          },
-                            childCount: data.length,
+    return FutureBuilder(
+        future: DefaultAssetBundle.of(context).loadString("assets/json/emoji.json"),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<dynamic> data = json.decode(snapshot.data.toString());
+            return Stack(
+              children: <Widget>[
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 200),
+                  curve: Curves.linear,
+                  height: isShowEmojiSection ? 200 : 0,
+                  padding: EdgeInsets.all(5),
+                  color: Colors.white,
+                  child: GridView.custom(
+                    padding: EdgeInsets.all(3),
+                    shrinkWrap: true,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 8,
+                      mainAxisSpacing: 0.5,
+                      crossAxisSpacing: 6.0,
+                    ),
+                    childrenDelegate: SliverChildBuilderDelegate((context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          String value = inputController.value.text +  String.fromCharCode(data[index]["unicode"]);
+                          inputController.text = value;
+                          setState(() {});
+                        },
+                        child: Center(
+                          child: Text(
+                            String.fromCharCode(data[index]["unicode"]),
+                            style: TextStyle(fontSize: 33),
                           ),
                         ),
-                      ),
-                      Positioned(
-                          bottom: 20,
-                          right: 30,
-                          child: GestureDetector(
-                            onTap: () {
-                              sendTextMessage();
-                            },
-                            child: Icon(Icons.send_rounded,size: 40,),
-                          )
-                      )
-                    ],
-                  );
-                }
-                return CircularProgressIndicator();
-              });
-        }
-    );
-
+                      );
+                    },
+                      childCount: data.length,
+                    ),
+                  ),
+                ),
+                Positioned(
+                    bottom: 20,
+                    right: 30,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          sendTextMessage();
+                        },
+                        child: Text('发送',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600
+                          ),
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
+                        ),
+                    ),
+                )
+              ],
+            );
+          }
+          return CircularProgressIndicator();
+        });
   }
 
   ///  构建更多操作区域
   Widget buildMoreAction() {
-    return ValueListenableBuilder(
-        valueListenable: moreActionHeightNotifier,
-        builder: (BuildContext context, double value, Widget child) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                top: BorderSide(
-                  width: 1,
-                  color: Colors.white,
-                ),
-             ),
-            ),
-            height: value,
-            padding: EdgeInsets.only(left: 20,right: 20, top: 10),
-            width: double.infinity,
-            child: Wrap(
-              spacing: 25.0, // 主轴(水平)方向间距
-              runSpacing: 10.0, // 纵轴（垂直）方向间距
-              alignment: WrapAlignment.spaceBetween, //沿主轴方向居中
-              children: <Widget>[
-                buildMoreActionItem(title: 'picture', icon: Icons.picture_in_picture_outlined, onTap: sendImageMessage),
-                buildMoreActionItem(title: 'video', icon: Icons.video_call_sharp, onTap: sendVideoMessage),
-                buildMoreActionItem(title: 'file', icon: Icons.file_copy_rounded, onTap: sendFileMessage),
-                buildMoreActionItem(title: 'audio', icon: Icons.keyboard_voice_sharp),
-                buildMoreActionItem(title: 'location', icon: Icons.wrong_location_sharp),
-              ],
-            ),
-          );
-        }
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 200),
+      curve: Curves.linear,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(
+            width: 1,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      height: isShowMoreAction ? 200 : 0,
+      padding: EdgeInsets.only(left: 20,right: 20, top: 10),
+      width: double.infinity,
+      child: Wrap(
+        spacing: 25.0, // 主轴(水平)方向间距
+        runSpacing: 10.0, // 纵轴（垂直）方向间距
+        alignment: WrapAlignment.spaceBetween, //沿主轴方向居中
+        children: <Widget>[
+          buildMoreActionItem(title: 'picture', icon: Icons.picture_in_picture_outlined, onTap: sendImageMessage),
+          buildMoreActionItem(title: 'video', icon: Icons.video_call_sharp, onTap: sendVideoMessage),
+          buildMoreActionItem(title: 'file', icon: Icons.file_copy_rounded, onTap: sendFileMessage),
+          buildMoreActionItem(title: 'audio', icon: Icons.keyboard_voice_sharp),
+          buildMoreActionItem(title: 'location', icon: Icons.wrong_location_sharp),
+        ],
+      ),
     );
   }
 

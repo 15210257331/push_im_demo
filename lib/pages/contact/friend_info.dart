@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:provider/provider.dart';
 import 'package:push_im_demo/pages/conversation/conversation_detail.dart';
+import 'package:push_im_demo/provider/contact_provider.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_friend_info.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_friend_info_result.dart';
+import 'package:tencent_im_sdk_plugin/models/v2_tim_friend_operation_result.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_value_callback.dart';
 import 'package:tencent_im_sdk_plugin/tencent_im_sdk_plugin.dart';
 
-class ContactDetail extends StatefulWidget {
+class FriendInfo extends StatefulWidget {
 
   final String userID;
 
-  const ContactDetail({Key key, this.userID}) : super(key: key);
+  const FriendInfo({Key key, this.userID}) : super(key: key);
 
   @override
   _ContactDetailState createState() => _ContactDetailState();
 }
 
-class _ContactDetailState extends State<ContactDetail> {
+class _ContactDetailState extends State<FriendInfo> {
 
   V2TimFriendInfo friendInfo;
+
+  bool isBlacklist = false;
 
   @override
   void initState() {
@@ -118,7 +124,45 @@ class _ContactDetailState extends State<ContactDetail> {
       margin: EdgeInsets.only(bottom: 20),
       child: ListTile(
         title: Text('加入黑名单'),
-        trailing: Switch(value: false, onChanged: (_) => {}),
+        trailing: Switch(
+            value: this.isBlacklist,
+            activeColor: Colors.red,
+            onChanged: (value) async {
+              setState(() {
+                this.isBlacklist = value;
+              });
+              if(this.isBlacklist) {
+                V2TimValueCallback<List<V2TimFriendOperationResult>> res = await TencentImSDKPlugin.v2TIMManager
+                    .getFriendshipManager()
+                    .addToBlackList(userIDList: [friendInfo.userID]);
+                if(res.code == 0) {
+                  List<V2TimFriendOperationResult> opres = res.data;
+                  if (opres[0].resultCode == 0) {
+                    EasyLoading.showSuccess('操作成功');
+                    Provider.of<ContactProvider>(context, listen: false).loadFriendList();
+                  } else {
+                    EasyLoading.showError('操作失败');
+                  }
+                }
+              } else {
+                V2TimValueCallback<List<V2TimFriendOperationResult>> res =
+                await TencentImSDKPlugin.v2TIMManager
+                    .getFriendshipManager()
+                    .deleteFromBlackList(userIDList: [friendInfo.userID]
+                );
+                if (res.code == 0) {
+                  List<V2TimFriendOperationResult> opres = res.data;
+                  print("黑名单返回${opres[0].resultCode}");
+                  if (opres[0].resultCode == 0) {
+                    EasyLoading.showSuccess('操作成功');
+                    Provider.of<ContactProvider>(context, listen: false).loadFriendList();
+                  } else {
+                    EasyLoading.showError('操作失败');
+                  }
+                }
+              }
+            },
+        ),
       ),
     );
   }
@@ -176,10 +220,20 @@ class _ContactDetailState extends State<ContactDetail> {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
         padding: EdgeInsets.only(left: 40, right: 40, top: 15, bottom: 15),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(
-              builder: (context) => ConversationDetail(conversationID: 'c2c_${widget.userID}',)
-          ));
+        onPressed: () async {
+          V2TimValueCallback<List<V2TimFriendOperationResult>> res =
+              await TencentImSDKPlugin.v2TIMManager
+              .getFriendshipManager()
+              .deleteFromFriendList(
+            userIDList: [friendInfo.userID],
+            deleteType: 2, //双向好友
+          );
+          if (res.code == 0) {
+            // 删除成功
+            EasyLoading.showSuccess('删除成功');
+            Provider.of<ContactProvider>(context, listen: false).loadFriendList();
+            Navigator.pop(context);
+          }
           // Navigator.of(context).pop();
         },
       ),

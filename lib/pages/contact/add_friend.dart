@@ -9,14 +9,14 @@ import 'package:tencent_im_sdk_plugin/models/v2_tim_friend_operation_result.dart
 import 'package:tencent_im_sdk_plugin/models/v2_tim_value_callback.dart';
 import 'package:tencent_im_sdk_plugin/tencent_im_sdk_plugin.dart';
 
-class ContactAdd extends StatefulWidget {
-  const ContactAdd({Key key}) : super(key: key);
+class AddFriend extends StatefulWidget {
+  const AddFriend({Key key}) : super(key: key);
 
   @override
   _ContactAddState createState() => _ContactAddState();
 }
 
-class _ContactAddState extends State<ContactAdd> {
+class _ContactAddState extends State<AddFriend> {
 
   @override
   void initState() {

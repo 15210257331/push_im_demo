@@ -5,10 +5,10 @@ import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:push_im_demo/config.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/utils/net_cache.dart';
-import 'package:push_im_demo/widgets/toast.dart';
 
 /*
   * http 操作类
@@ -81,7 +81,7 @@ class HttpUtil {
     }, onError: (DioError e) {
       ErrorEntity eInfo = createErrorEntity(e);
       // 错误提示
-      toastInfo(msg: eInfo.message);
+      EasyLoading.showError(eInfo.message);
       // 错误交互处理
       var context = e.request.extra["context"];
       if (context != null) {

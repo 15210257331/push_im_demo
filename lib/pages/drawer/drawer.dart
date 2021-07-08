@@ -147,18 +147,37 @@ class _DrawerState extends State<DrawerPage> {
       child: Column(
         children: [
           ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('消息中心'),
+            leading: Icon(Icons.vrpano_outlined),
+            title: Text('个人中心'),
             trailing: Icon(Icons.chevron_right),
           ),
           Divider(
             height: 1,
             color: Colors.grey,
           ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('消息中心'),
-            trailing: Icon(Icons.chevron_right),
+          GestureDetector(
+            onTap: () {
+
+            },
+            child: ListTile(
+              leading: Icon(Icons.settings_system_daydream_outlined),
+              title: Text('GitHub'),
+              trailing: Icon(Icons.chevron_right),
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: Colors.grey,
+          ),
+          GestureDetector(
+            onTap: () {
+
+            },
+            child: ListTile(
+              leading: Icon(Icons.settings_system_daydream_outlined),
+              title: Text('我的二维码'),
+              trailing: Icon(Icons.chevron_right),
+            ),
           ),
         ],
       ),
@@ -191,7 +210,7 @@ class _DrawerState extends State<DrawerPage> {
             trailing: Icon(Icons.chevron_right),
           ),
           ListTile(
-            leading: Icon(Icons.settings),
+            leading: Icon(Icons.dark_mode_sharp),
             title: Text('夜间模式'),
             trailing: Switch(value: false, onChanged: (_) => {}),
           ),
@@ -256,13 +275,13 @@ class _DrawerState extends State<DrawerPage> {
   Future<void> logout() async {
     await StorageUtil().remove(STORAGE_USER_PROFILE_KEY);
     Global.userInfo = null;
-    Global.navigatorKey.currentState.popUntil((Route<dynamic> route) {
-      if (route.settings.name == '/') {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    // Global.navigatorKey.currentState.popUntil((Route<dynamic> route) {
+    //   if (route.settings.name == '/') {
+    //     return true;
+    //   } else {
+    //     return false;
+    //   }
+    // });
     Global.navigatorKey.currentState.pushReplacement(
       MaterialPageRoute(
           builder: (context) => Login(),

@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:easy_dialog/easy_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:install_plugin/install_plugin.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:push_im_demo/api/app_api.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/model/update.dart';
-import 'package:push_im_demo/widgets/toast.dart';
 
 /// app 升级
 class AppUpdateUtil {
@@ -57,7 +57,7 @@ class AppUpdateUtil {
           InstallPlugin.gotoAppStore(_appUpdateInfo.shopUrl);
         } else {
           // apk 下载安装
-          toastInfo(msg: "开始下载升级包");
+          EasyLoading.showInfo('开始下载升级包');
           _downloadAPKAndSetup(_appUpdateInfo.fileUrl);
         }
       });

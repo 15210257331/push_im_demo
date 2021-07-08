@@ -93,8 +93,7 @@ class HomeState extends State<Home> {
       /// 登录成功
       if(loginRes.code==0){
         setSelfInfo();
-        // 加载好友列表
-        Provider.of<ContactProvider>(context, listen: false).loadFriendList();
+        loadFriendList();
       }else{
         print(loginRes.desc);
       }
@@ -186,7 +185,7 @@ class HomeState extends State<Home> {
     String type = data.type;
     if (type == 'onFriendListAdded' || type == 'onFriendListDeleted' || type == 'onFriendInfoChanged' || type == 'onBlackListDeleted') {
       //好友加成功了，删除好友 重新获取好友
-      Provider.of<ContactProvider>(context, listen: false).loadFriendList();
+      // Provider.of<ContactProvider>(context, listen: false).loadFriendList();
     }
     if (type == 'onFriendApplicationListAdded') {
       // 收到加好友申请,添加双向好友时双方都会周到这个回调，这时要过滤掉type=2的不显示
@@ -213,6 +212,11 @@ class HomeState extends State<Home> {
       faceUrl: Global.userInfo.avatar,
       selfSignature: '这是我的个性签名'
     );
+  }
+
+  /// 请求好友列表
+  loadFriendList() async {
+    Provider.of<ContactProvider>(context, listen: false).loadFriendList();
   }
 
   /// 版本升级

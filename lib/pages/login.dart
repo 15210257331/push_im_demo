@@ -6,6 +6,7 @@ import 'package:push_im_demo/api/user_api.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/model/user_info.dart';
 import 'package:push_im_demo/pages/home.dart';
+import 'package:push_im_demo/utils/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert' as convert;
 import 'package:bling_extensions/bling_extensions.dart';
@@ -28,11 +29,30 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setLastTimeContent();
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  /// 填充上次登录的账号和密码
+  setLastTimeContent() async{
+    String email = StorageUtil().getJSON('email') ?? '';
+    String password = StorageUtil().getJSON('password') ?? '';
+    _emailController.value = _emailController.value.copyWith(
+      text: email,
+      selection: TextSelection(baseOffset: email.length, extentOffset: email.length),
+      composing: TextRange.empty,
+    );
+    _passController.value = _passController.value.copyWith(
+      text: password,
+      selection: TextSelection(baseOffset: password.length, extentOffset: password.length),
+      composing: TextRange.empty,
+    );
   }
 
   /// 执行登录操作
@@ -53,7 +73,11 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
       params: params,
     );
     if (userInfo != null && userInfo.id != null) {
+      /// 保存用户信息
       Global.saveProfile(userInfo);
+      /// 保存用户名和密码
+      StorageUtil().setJSON('email', email.trim());
+      StorageUtil().setJSON('password', password.trim());
       Global.navigatorKey.currentState.pushReplacement(
         MaterialPageRoute(
             builder: (context) => Home(),
@@ -67,6 +91,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         body: AnnotatedRegion(
           value: SystemUiOverlayStyle.dark,
           child: GestureDetector(

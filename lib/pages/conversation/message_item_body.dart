@@ -65,8 +65,7 @@ class _MessageBodyState extends State<MessageItemBody> {
       default:
         return Container(
             height: 40,
-            child: Center(child: Text("MsgBodyTypeError")
-            )
+            child: Text("未知消息类型")
         );
     }
   }

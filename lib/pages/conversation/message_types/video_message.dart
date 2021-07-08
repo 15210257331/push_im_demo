@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:push_im_demo/widgets/toast.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:push_im_demo/widgets/video_player.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_message.dart';
 import 'package:video_player/video_player.dart';
@@ -99,7 +99,7 @@ class _VideoMessageState extends State<VideoMessage> {
                             setState(() {});
                           }
                         } catch (err) {
-                          toastInfo(msg: err);
+                          EasyLoading.showError('错误');
                         }
                       },
                       child: Icon(_controller.value.isPlaying ? Icons.pause_circle_outline : Icons.play_circle_outline,
