@@ -1,22 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:push_im_demo/global.dart';
-import 'package:push_im_demo/pages/conversation/file_message.dart';
-import 'package:push_im_demo/pages/conversation/image_message.dart';
-import 'package:push_im_demo/pages/conversation/sound_message.dart';
-import 'package:push_im_demo/pages/conversation/text_message.dart';
-import 'package:push_im_demo/pages/conversation/video_message.dart';
-import 'package:push_im_demo/provider/im_provider.dart';
+import 'package:push_im_demo/pages/conversation/message_item_body.dart';
+import 'package:push_im_demo/provider/conversation_provider.dart';
 import 'package:push_im_demo/utils/file_utils.dart';
-import 'package:push_im_demo/widgets/photo_view_gallery.dart';
-import 'package:tencent_im_sdk_plugin/enum/message_elem_type.dart';
+import 'package:push_im_demo/widgets/toast.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_callback.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_conversation.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_message.dart';
@@ -49,8 +41,6 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
   ValueNotifier<double> emojiHeightNotifier = ValueNotifier(0);
 
   V2TimConversation conversationData;
-
-  List<V2TimMessage> messageList = [];
 
   @override
   void initState() {
@@ -93,15 +83,18 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
       conversationID: widget.conversationID,
     );
     if(res.data != null) {
-      conversationData = res.data;
+      setState(() {
+        conversationData = res.data;
+      });
       markC2CMessageAsRead();
       V2TimValueCallback<List<V2TimMessage>> rest = await TencentImSDKPlugin.v2TIMManager.getMessageManager().getC2CHistoryMessageList(
         userID: conversationData?.userID,
-        count: 20,
+        count: 30,
       );
-      setState(() {
-        messageList = rest.data;
-      });
+      if(rest.code == 0) {
+        List<V2TimMessage> list = rest.data;
+        Provider.of<ConversationProvider>(context, listen: false).addMessages(conversationData.userID, list);
+      }
     }
   }
 
@@ -182,9 +175,9 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
       userID: conversationData.userID,
     );
     if(res.code == 0) {
+      Provider.of<ConversationProvider>(context, listen: false).addOneMessageIfNotExits(conversationData.userID, res.data);
       setState(() {
         inputController.clear();
-        messageList.insert(0,res.data);
         scrollToBottom();
       });
     }
@@ -192,7 +185,7 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
 
   /// 发送图片消息
   sendImageMessage() async {
-    File selectedImage = await FileUtils.getFile(type: 'image');
+    File selectedImage = await FileUtils.getImage();
     V2TimValueCallback<V2TimMessage> res = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendImageMessage(
       imagePath: selectedImage.path,
       receiver: conversationData.userID,
@@ -202,8 +195,9 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
       // isExcludedFromUnreadCount: isExcludedFromUnreadCount,
     );
     if(res.code == 0) {
+      Provider.of<ConversationProvider>(context, listen: false).addOneMessageIfNotExits(conversationData.userID, res.data);
+      print("发送消息成功 消息状态${res.data.status}");
       setState(() {
-        messageList.insert(0,res.data);
         scrollToBottom();
       });
     }
@@ -211,7 +205,7 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
 
   /// 发送视频消息
   sendVideoMessage() async {
-    File selectedVideo = await FileUtils.getFile(type: 'video');
+    File selectedVideo = await FileUtils.getVideo();
     if(selectedVideo == null) {
       return;
     }
@@ -237,10 +231,39 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
       // isExcludedFromUnreadCount: isExcludedFromUnreadCount,
     );
     if(res.code == 0) {
+      Provider.of<ConversationProvider>(context, listen: false).addOneMessageIfNotExits(conversationData.userID, res.data);
       setState(() {
-        messageList.insert(0,res.data);
         scrollToBottom();
       });
+    }
+  }
+
+  /// 发送文件消息
+  sendFileMessage() async {
+    File selectedFile = await FileUtils.getSingleFile();
+    if(selectedFile == null) {
+      return;
+    }
+    V2TimValueCallback<V2TimMessage> res = await TencentImSDKPlugin
+        .v2TIMManager.getMessageManager().sendFileMessage(
+      fileName: selectedFile.path.split('/').last,
+      filePath: selectedFile.path,
+      receiver: conversationData.userID,
+      // groupID: type == 2 ? toUser : null,
+      // onlineUserOnly: false,
+    );
+    if (res.code == 0) {
+      try {
+        Provider.of<ConversationProvider>(context, listen: false)
+            .addOneMessageIfNotExits(conversationData.userID, res.data);
+        setState(() {
+          scrollToBottom();
+        });
+      } catch (err) {
+        toastInfo(msg: '发送失败');
+      }
+    } else {
+      // User canceled the picker
     }
   }
 
@@ -250,7 +273,7 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
       backgroundColor: Color(0xFFEBEBEB),
       appBar: AppBar(
         leading: new IconButton(
-          icon: new Icon(Icons.arrow_back_ios,color: Color(0xFF333333)),
+          icon: new Icon(Icons.arrow_back_ios,color: Colors.white),
           onPressed: () {
             if (focusNode.hasFocus) {
               focusNode.unfocus();
@@ -261,10 +284,10 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
         elevation: 0,
         centerTitle: true,
         title: Text(conversationData?.showName ?? '',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.white,
-        brightness: Brightness.light,
+        // backgroundColor: Colors.white,
+        // brightness: Brightness.light,
       ),
       body: GestureDetector(
         onTap: () {
@@ -295,70 +318,36 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
 
   /// 构建消息列表区
   Widget buildChatBody() {
-    return Expanded(
-      child:ListView.builder(
-        reverse: true,
-        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 15.0),
-        itemCount: messageList.length,
-        controller: scrollController,
-        itemBuilder: (context, index) {
-         if(messageList[index].isSelf == true) {
-           return Container(
-             margin: EdgeInsets.only(top: 10,bottom: 10),
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.end,
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 buildMessageItem(messageList[index]),
-                 CircleAvatar(
-                   radius: 23,
-                   backgroundImage: NetworkImage(messageList[index].faceUrl),
-                 ),
-               ],
-             ),
-           );
-         } else {
-           return Container(
-             margin: EdgeInsets.only(top: 10,bottom: 10),
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.start,
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 CircleAvatar(
-                   radius: 23,
-                   backgroundImage: NetworkImage(conversationData?.faceUrl),
-                 ),
-                 buildMessageItem(messageList[index]),
-               ],
-             ),
-           );
-         }
-        },
-      ),
-    );
-  }
-
-  Widget buildMessageItem(V2TimMessage v2TimMessage) {
-    switch (v2TimMessage.elemType) {
-      case MessageElemType.V2TIM_ELEM_TYPE_TEXT:
-        return TextMessage(v2TimMessage: v2TimMessage,);
-      case MessageElemType.V2TIM_ELEM_TYPE_IMAGE:
-        return ImageMessage(v2TimMessage: v2TimMessage);
-      case MessageElemType.V2TIM_ELEM_TYPE_SOUND:
-        return SoundMessage(v2TimMessage: v2TimMessage);
-      case MessageElemType.V2TIM_ELEM_TYPE_VIDEO:
-        return VideoMessage(v2TimMessage: v2TimMessage);
-      case MessageElemType.V2TIM_ELEM_TYPE_FILE:
-        return FileMessage(v2TimMessage: v2TimMessage);
-      case MessageElemType.V2TIM_ELEM_TYPE_FACE:
-        return TextMessage(v2TimMessage: v2TimMessage);
-      default:
-        return Container(
-            height: 40,
-            child: Center(child: Text("MsgBodyTypeError")
-            )
-        );
-    }
+    return Consumer<ConversationProvider>(builder: (context, conversationProvider, _) {
+      List<V2TimMessage> messageList = [];
+      if(conversationData != null && conversationProvider.allMessageMap.containsKey(conversationData.userID)) {
+         messageList = conversationProvider.allMessageMap[conversationData.userID];
+      }
+      return Expanded(
+        child:ListView.builder(
+          reverse: true,
+          padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 15.0),
+          itemCount: messageList.length,
+          controller: scrollController,
+          itemBuilder: (context, index) {
+            return Container(
+              margin: EdgeInsets.only(top: 10,bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                textDirection: messageList[index].isSelf ? TextDirection.rtl : TextDirection.ltr,
+                children: [
+                  CircleAvatar(
+                    radius: 23,
+                    backgroundImage: messageList[index].faceUrl == null || messageList[index].faceUrl == '' ? AssetImage('assets/images/avatar.png') : NetworkImage(messageList[index].faceUrl),
+                  ),
+                  MessageItemBody(v2TimMessage:messageList[index]),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 
   /// 构建底部操作区域
@@ -521,7 +510,7 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
               children: <Widget>[
                 buildMoreActionItem(title: 'picture', icon: Icons.picture_in_picture_outlined, onTap: sendImageMessage),
                 buildMoreActionItem(title: 'video', icon: Icons.video_call_sharp, onTap: sendVideoMessage),
-                buildMoreActionItem(title: 'file', icon: Icons.file_copy_rounded),
+                buildMoreActionItem(title: 'file', icon: Icons.file_copy_rounded, onTap: sendFileMessage),
                 buildMoreActionItem(title: 'audio', icon: Icons.keyboard_voice_sharp),
                 buildMoreActionItem(title: 'location', icon: Icons.wrong_location_sharp),
               ],

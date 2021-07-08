@@ -92,7 +92,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   /// 构建logo
   Widget buildLogo() {
     return Container(
-      margin: EdgeInsets.only(top: 140, bottom: 100),
+      margin: EdgeInsets.only(top: 120, bottom: 90),
       child: Image.asset("assets/images/logo.png",
           fit: BoxFit.cover
       ),
@@ -115,6 +115,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 }),
                 fillColor: Color(0xffF4F4F4),
                 hintText: 'email',
+                hintStyle: TextStyle(
+                  color: Colors.black12
+                ),
                 filled: true,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.all(
@@ -150,6 +153,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     suffixIcon: _buildSuffixIcon(),
                     fillColor: Color(0xffF4F4F4),
                     hintText: 'password',
+                    hintStyle: TextStyle(
+                        color: Colors.black12
+                    ),
                     filled: true,
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(
@@ -195,9 +201,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
       valueListenable: _showPassNotifier,
       builder: (context, flag, _) {
         if (flag) {
-          return Icon(Icons.remove_red_eye_outlined);
+          return Icon(Icons.remove_red_eye_outlined,color: Colors.black12);
         } else {
-          return Icon(Icons.remove_red_eye_rounded);
+          return Icon(Icons.remove_red_eye_rounded, color: Colors.black12);
         }
       },
     ).onTap(() => _showPassNotifier.value = !_showPassNotifier.value,

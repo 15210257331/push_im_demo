@@ -28,6 +28,8 @@ dependencies:
 
   shared_preferences: ^0.5.12+4
 
+  intl: ^0.17.0
+
   # 网络
   dio: 3.0.9
   cookie_jar: ^1.0.1
@@ -57,8 +59,11 @@ dependencies:
   # 图片预览
   photo_view: 0.10.2
 
+  # 文件选择
+  file_picker: ^2.1.7
+
   # 生成视频缩略图
-  video_thumbnail: ^0.2.5
+  video_thumbnail: ^0.3.3
 
   # 视频播放
   video_player: 1.0.0
@@ -103,7 +108,7 @@ dependencies:
       ref: V1.0.7
 
   # 腾讯IM
-  tencent_im_sdk_plugin: ^1.1.0
+  tencent_im_sdk_plugin: ^2.0.6
 
   # class 扩展
   bling_extensions:

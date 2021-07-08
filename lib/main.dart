@@ -7,10 +7,10 @@ import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/pages/home.dart';
 import 'package:push_im_demo/pages/login.dart';
 import 'package:push_im_demo/pages/splash_screen.dart';
+import 'package:push_im_demo/provider/conversation_provider.dart';
 import 'package:push_im_demo/provider/app_provider.dart';
 import 'package:push_im_demo/provider/contact_provider.dart';
 import 'package:push_im_demo/config.dart';
-import 'package:push_im_demo/provider/im_provider.dart';
 
 void main() async {
 
@@ -21,11 +21,11 @@ void main() async {
         providers: [
           ChangeNotifierProvider<AppProvider>(create: (_) => AppProvider()),
           ChangeNotifierProvider<ContactProvider>(create: (_) => ContactProvider()),
-          ChangeNotifierProvider<ImProvider>(create: (_) => ImProvider()),
+          ChangeNotifierProvider<ConversationProvider>(create: (_) => ConversationProvider()),
         ],
         child: Consumer2<AppProvider, ContactProvider>(
           builder: (context, appProvider, userInfoProvider, _) {
-            Color _themeColor;
+            Map<String, Color> _themeColor;
             String themeColorKey = appProvider.themeColorKey;
             if (appProvider.themeColorMap[themeColorKey] != null) {
               _themeColor = appProvider.themeColorMap[themeColorKey];
@@ -37,13 +37,13 @@ void main() async {
               /// 两个属性现在设置的值相同 则表明不管系统如何切换都显示同一套颜色
               theme: ThemeData(
                 brightness: Brightness.light,
-                primaryColor: _themeColor,
-                cardColor: _themeColor,
+                primaryColor: _themeColor['primaryColor'],
+                cardColor: _themeColor['cardColor'],
               ),
               darkTheme: ThemeData(
                 brightness: Brightness.dark,
-                primaryColor: _themeColor,
-                cardColor: _themeColor,
+                primaryColor: _themeColor['primaryColor'],
+                cardColor: _themeColor['cardColor'],
               ),
               initialRoute: "/",
               navigatorKey: Global.navigatorKey,

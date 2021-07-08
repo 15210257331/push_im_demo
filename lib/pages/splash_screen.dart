@@ -18,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: Duration(seconds: (5)),
+      duration: Duration(seconds: (3)),
       vsync: this,
     );
   }
@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       body: Lottie.asset(
-        'assets/json/splash_lottie.json',
+        'assets/json/66992-the-flying-rocket.json',
         controller: _controller,
         height: MediaQuery.of(context).size.height * 1,
         animate: true,

@@ -13,7 +13,6 @@ class DrawerPage extends StatefulWidget {
 }
 
 class _DrawerState extends State<DrawerPage> {
-  String _colorKey;
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +40,7 @@ class _DrawerState extends State<DrawerPage> {
   }
 
   Widget buildHeader() {
-    return Consumer<ContactProvider>(
-        builder: (context, userInfoProvider, _) {
+    return Consumer<ContactProvider>(builder: (context, userInfoProvider, _) {
           return DrawerHeader(
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
@@ -53,21 +51,34 @@ class _DrawerState extends State<DrawerPage> {
             ),
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.only(top: 10),
-              child: ListTile(
-                leading: CircleAvatar(
-                  radius: 30,
-                  backgroundImage: NetworkImage(Global?.userInfo?.avatar),
-                ),
-                title: Text(Global?.userInfo?.englishName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white
+              padding: EdgeInsets.only(top:0),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundImage: NetworkImage(Global?.userInfo?.avatar),
                   ),
-                ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(Global?.userInfo?.englishName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text('userId:${Global?.userInfo?.id}',
+                    style: TextStyle(
+                      color: Colors.white
+                    ),
+                  )
+                ],
               ),
             )
           );
@@ -197,7 +208,7 @@ class _DrawerState extends State<DrawerPage> {
                       spacing: 8,
                       runSpacing: 8,
                       children: appProvider.themeColorMap.keys.map((key) {
-                        Color colorItem = appProvider.themeColorMap[key];
+                        Color colorItem = appProvider.themeColorMap[key]['primaryColor'];
                         return InkWell(
                           onTap: () async {
                             Provider.of<AppProvider>(context, listen: false).setTheme(key);

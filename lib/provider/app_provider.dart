@@ -15,23 +15,63 @@ class AppProvider with ChangeNotifier {
   }
 
   /// 主题颜色map
-  Map<String, Color> themeColorMap = {
-    'gray': Colors.grey,
-    'blue': Colors.blue,
-    'blueAccent': Colors.blueAccent,
-    'cyan': Colors.cyan,
-    'deepPurple': Colors.purple,
-    'deepPurpleAccent': Colors.deepPurpleAccent,
-    'deepOrange': Colors.orange,
-    'green': Colors.green,
-    'indigo': Colors.indigo,
-    'indigoAccent': Colors.indigoAccent,
-    'orange': Colors.orange,
-    'purple': Colors.purple,
-    'pink': Colors.pink,
-    'red': Colors.red,
-    'teal': Colors.teal,
-    'black': Colors.black,
+  Map<String, Map<String, Color>> themeColorMap = {
+    'gray': {
+      'primaryColor': Colors.grey,
+      'cardColor': Colors.white,
+    },
+    'blue': {
+      'primaryColor': Colors.blue,
+      'cardColor': Colors.white,
+    },
+    'blueAccent': {
+      'primaryColor': Colors.blueAccent,
+      'cardColor': Colors.white,
+    },
+    'cyan': {
+      'primaryColor': Colors.cyan,
+      'cardColor': Colors.white,
+    },
+    'deepPurple': {
+      'primaryColor': Colors.deepPurple,
+      'cardColor': Colors.white,
+    },
+    'deepPurpleAccent': {
+      'primaryColor': Colors.deepPurpleAccent,
+      'cardColor': Colors.white,
+    },
+    'deepOrange': {
+      'primaryColor': Colors.deepOrange,
+      'cardColor': Colors.white,
+    },
+    'green': {
+      'primaryColor': Colors.green,
+      'cardColor': Colors.white,
+    },
+    'indigo': {
+      'primaryColor': Colors.indigo,
+      'cardColor': Colors.white,
+    },
+    'indigoAccent': {
+      'primaryColor': Colors.indigoAccent,
+      'cardColor': Colors.white,
+    },
+    'orange': {
+      'primaryColor': Colors.orange,
+      'cardColor': Colors.white,
+    },
+    'purple': {
+      'primaryColor': Colors.purple,
+      'cardColor': Colors.white,
+    },
+    'pink': {
+      'primaryColor': Colors.pink,
+      'cardColor': Colors.white,
+    },
+    'red': {
+      'primaryColor': Colors.red,
+      'cardColor': Colors.white,
+    },
   };
 
 

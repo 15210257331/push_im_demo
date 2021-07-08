@@ -28,9 +28,7 @@ class _NewsState extends State<News> with SingleTickerProviderStateMixin {
   List<dynamic> newsList = [];
 
   TabController _tabController;
-
-  String _colorKey;
-
+  
   @override
   void initState() {
     super.initState();

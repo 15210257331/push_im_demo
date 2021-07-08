@@ -2,9 +2,12 @@ import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 import 'package:push_im_demo/pages/conversation/conversation_detail.dart';
 import 'package:push_im_demo/pages/drawer/drawer.dart';
+import 'package:push_im_demo/provider/conversation_provider.dart';
 import 'package:push_im_demo/utils/date_utls.dart';
+import 'package:push_im_demo/widgets/scan_page.dart';
 import 'package:tencent_im_sdk_plugin/enum/message_elem_type.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_conversation.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_conversation_result.dart';
@@ -25,12 +28,10 @@ class _ConversationState extends State<Conversation> {
 
   int nextSeq = 0;
 
-  List<V2TimConversation> conversationList = [];
-
   @override
   void initState() {
     super.initState();
-    getConversationList();
+    // getConversationList();
   }
 
   @override
@@ -38,18 +39,6 @@ class _ConversationState extends State<Conversation> {
     super.dispose();
     textEditingController.dispose();
     _easyRefreshController.dispose();
-  }
-
-  getConversationList() async {
-    V2TimValueCallback<V2TimConversationResult> res = await TencentImSDKPlugin
-        .v2TIMManager
-        .getConversationManager()
-        .getConversationList(nextSeq: nextSeq, count: 50);
-    setState(() {
-      conversationList = res.data.conversationList;
-      print(conversationList);
-      // nextSeq = res['data']['nextSeq'];
-    });
   }
 
   @override
@@ -68,9 +57,7 @@ class _ConversationState extends State<Conversation> {
           actions: [
             Padding(
               padding: EdgeInsets.only(right: 10),
-              child:  Icon(Icons.add,
-                size: 28,
-              ),
+              child:  buildPopupMenuButton(),
             )
           ],
           /// 不指定背景颜色 则使用MaterialApp themData 中定义的颜色
@@ -83,57 +70,94 @@ class _ConversationState extends State<Conversation> {
         body: Container(
           color: Color(0xFFf4f4f4),
           width: double.infinity,
-          child:EasyRefresh(
-            enableControlFinishRefresh: false,
-            enableControlFinishLoad: false,
-            controller: _easyRefreshController,
-            onRefresh: () async {
-              await getConversationList();
-              _easyRefreshController.resetLoadState();
-            },
-            onLoad: () async {
-              // page += 1;
-              // if (conversationList.length < newsTotal) {
-              //   await pushNewsList(page: page, pageSize: pageSize);
-              // }
-              // _easyRefreshController.finishLoad(
-              //     noMore: newsList.length >= newsTotal
-              // );
-            },
-            child: ListView.separated(
-              itemBuilder: (BuildContext context, int index) {
-                return Slidable(
-                  actionPane: SlidableDrawerActionPane(),
-                  actionExtentRatio: 0.2,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => ConversationDetail(conversationID: conversationList[index].conversationID)
-                      ));
-                    },
-                    child: buildConversationItem(conversationList[index]),
-                  ),
-                  secondaryActions: <Widget>[
-                    IconSlideAction(
-                      caption: 'Delete',
-                      color: Colors.red,
-                      icon: Icons.delete,
-                      onTap: () => print('Delete'),
-                    ),
-                  ],
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return Divider(
-                  color: Color(0xFFEBEBEB),
-                  // indent: 70,
-                  height: 1,
-                );
-              },
-              itemCount: conversationList.length,
-            ),
-          ),
+          child: Consumer<ConversationProvider>(builder: (context,conversationProvider, _){
+            List<V2TimConversation> conversationList = conversationProvider.conversionList;
+            return EasyRefresh(
+                enableControlFinishRefresh: false,
+                enableControlFinishLoad: false,
+                controller: _easyRefreshController,
+                onRefresh: () async {
+                  await Provider.of<ConversationProvider>(context, listen: false).loadConversationList();
+                  _easyRefreshController.resetLoadState();
+                },
+                onLoad: () async {
+                  // page += 1;
+                  // if (conversationList.length < newsTotal) {
+                  //   await pushNewsList(page: page, pageSize: pageSize);
+                  // }
+                  // _easyRefreshController.finishLoad(
+                  //     noMore: newsList.length >= newsTotal
+                  // );
+                },
+                child:  ListView.separated(
+                  itemBuilder: (BuildContext context, int index) {
+                    return Slidable(
+                      actionPane: SlidableDrawerActionPane(),
+                      actionExtentRatio: 0.2,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => ConversationDetail(conversationID: conversationList[index].conversationID)
+                          ));
+                        },
+                        child: buildConversationItem(conversationList[index]),
+                      ),
+                      secondaryActions: <Widget>[
+                        IconSlideAction(
+                          caption: 'Delete',
+                          color: Colors.red,
+                          icon: Icons.delete,
+                          onTap: () => print('Delete'),
+                        ),
+                      ],
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Divider(
+                      color: Color(0xFFEBEBEB),
+                      // indent: 70,
+                      height: 1,
+                    );
+                  },
+                  itemCount: conversationList.length,
+                )
+            );
+          }),
         )
+    );
+  }
+
+  Widget buildPopupMenuButton() {
+    return PopupMenuButton<String>(
+        offset: Offset(0, 40),
+        icon: Icon(Icons.add, size: 28,),
+        itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
+          PopupMenuItem<String>(
+              value: '1',
+              child: new Text('添加朋友')
+          ),
+          PopupMenuItem<String>(
+              value: '2',
+              child: new Text('发起群聊')
+          ),
+          PopupMenuItem<String>(
+              value: '3',
+              child: new Text('扫一扫')
+          ),
+        ],
+        onSelected: (String value) {
+          print(value);
+          if(value == '3') {
+            Navigator.push(context, MaterialPageRoute(
+                builder: (context) {
+                  return ScanPage();
+                }
+            ));
+          }
+        },
+        onCanceled: () {
+          print('onCanceled');
+        },
     );
   }
 
@@ -186,14 +210,14 @@ class _ConversationState extends State<Conversation> {
             height: 50,
             child: CircleAvatar(
               radius: 50,
-              backgroundImage: NetworkImage(conversation.faceUrl),
+              backgroundImage: conversation.faceUrl == null || conversation.faceUrl == '' ? AssetImage('assets/images/avatar.png') : NetworkImage(conversation.faceUrl),
             ),
           ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(conversation.showName),
-              Text(DateUtils.timestampToLocalDateYMD(conversation.lastMessage.timestamp)),
+              Text(DateFormatUtils.timestampToLocalDateYMD(conversation.lastMessage.timestamp)),
             ],
           ),
           subtitle: Row(
@@ -224,11 +248,19 @@ class _ConversationState extends State<Conversation> {
           overflow: TextOverflow.ellipsis,
         );
       case MessageElemType.V2TIM_ELEM_TYPE_IMAGE:
-        return Text('[IMAGE]');
+        return Text('[图片消息]');
       case MessageElemType.V2TIM_ELEM_TYPE_SOUND:
-        return Text('[SOUND]');
+        return Text('[语音消息]');
+      case MessageElemType.V2TIM_ELEM_TYPE_VIDEO:
+        return Text('[视频消息]');
+      case MessageElemType.V2TIM_ELEM_TYPE_FILE:
+        return Text('[文件]');
+      case MessageElemType.V2TIM_ELEM_TYPE_LOCATION:
+        return Text('[地理位置]');
+      case MessageElemType.V2TIM_ELEM_TYPE_CUSTOM:
+        return Text('[自定义消息]');
       default:
-        return Container(height: 40, child: Center(child: Text("MsgBodyTypeError")));
+        return Text("未知消息类型");
     }
   }
 }
