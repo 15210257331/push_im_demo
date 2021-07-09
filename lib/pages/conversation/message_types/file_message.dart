@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:push_im_demo/utils/file_utils.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_message.dart';
 
 class FileMessage extends StatefulWidget {
@@ -12,13 +13,14 @@ class FileMessage extends StatefulWidget {
 }
 
 class _FileMessageState extends State<FileMessage> {
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (){},
       child: Container(
           margin: EdgeInsets.only(top: 5),
-          padding: EdgeInsets.all(6),
+          padding: EdgeInsets.all(3),
           decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.circular(4)
@@ -45,18 +47,27 @@ class _FileMessageState extends State<FileMessage> {
                             color: Colors.black,
                           ),
                         ),
-                        Text(
-                          "${widget.v2TimMessage.fileElem.fileSize} KB",
-                          style: TextStyle(
-                            height: 1.5,
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(FileUtils.formatFileSize(widget.v2TimMessage.fileElem.fileSize),
+                              style: TextStyle(
+                                height: 1.5,
+                                fontSize: 12,
+                                color: Colors.black,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: FileUtils.downloadFile,
+                              child: Icon(Icons.download),
+                            )
+                          ],
                         )
                       ],
                     ),
                   ),
                 ),
+
               ],
             ),
           )

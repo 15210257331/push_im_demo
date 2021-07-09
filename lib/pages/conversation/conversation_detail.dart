@@ -241,6 +241,39 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
     }
   }
 
+  Future audioVideoCall() async {
+    final option = await showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            height: 200.0,
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  title: Text('语音通话',textAlign: TextAlign.center),
+                  onTap: () {
+                    Navigator.pop(context, '拍照');
+                  },
+                ),
+                ListTile(
+                  title: Text('视频通话',textAlign: TextAlign.center),
+                  onTap: () {
+                    Navigator.pop(context, '从相册选择');
+                  },
+                ),
+                ListTile(
+                  title: Text('取消',textAlign: TextAlign.center),
+                  onTap: () {
+                    Navigator.pop(context, '取消');
+                  },
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -409,7 +442,7 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
                 AnimatedContainer(
                   duration: Duration(milliseconds: 200),
                   curve: Curves.linear,
-                  height: isShowEmojiSection ? 200 : 0,
+                  height: isShowEmojiSection ? 260 : 0,
                   padding: EdgeInsets.all(5),
                   color: Colors.white,
                   child: GridView.custom(
@@ -478,19 +511,22 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
           ),
         ),
       ),
-      height: isShowMoreAction ? 200 : 0,
+      height: isShowMoreAction ? 240 : 0,
       padding: EdgeInsets.only(left: 20,right: 20, top: 10),
       width: double.infinity,
-      child: Wrap(
-        spacing: 25.0, // 主轴(水平)方向间距
-        runSpacing: 10.0, // 纵轴（垂直）方向间距
-        alignment: WrapAlignment.spaceBetween, //沿主轴方向居中
+      child: GridView(
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 100, //根据maxCrossAxisExtent的值对比屏幕的真实宽度，决定一行或者一列显示多少个Item
+              mainAxisExtent: 100, // 每个item 的高度
+              mainAxisSpacing: 15,
+              crossAxisSpacing: 10
+        ),
         children: <Widget>[
           buildMoreActionItem(title: 'picture', icon: Icons.picture_in_picture_outlined, onTap: sendImageMessage),
           buildMoreActionItem(title: 'video', icon: Icons.video_call_sharp, onTap: sendVideoMessage),
           buildMoreActionItem(title: 'file', icon: Icons.file_copy_rounded, onTap: sendFileMessage),
           buildMoreActionItem(title: 'audio', icon: Icons.keyboard_voice_sharp),
-          buildMoreActionItem(title: 'location', icon: Icons.wrong_location_sharp),
+          buildMoreActionItem(title: '音视频', icon: Icons.featured_video_outlined,onTap: audioVideoCall),
         ],
       ),
     );
@@ -515,8 +551,8 @@ class _ConversationDetailState extends State<ConversationDetail> with SingleTick
           ),
         ),
         Padding(
-            padding: EdgeInsets.only(top: 10),
-            child: Text(title),
+          padding: EdgeInsets.only(top: 10),
+          child: Text(title),
         )
       ],
     );

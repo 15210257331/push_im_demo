@@ -4,6 +4,7 @@ import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/pages/contact/black_list.dart';
 import 'package:push_im_demo/pages/contact/add_friend.dart';
 import 'package:push_im_demo/pages/contact/friend_info.dart';
+import 'package:push_im_demo/pages/contact/friend_notice.dart';
 import 'package:push_im_demo/pages/conversation/conversation_detail.dart';
 import 'package:push_im_demo/pages/drawer/drawer.dart';
 import 'package:push_im_demo/provider/contact_provider.dart';
@@ -61,11 +62,19 @@ class _ContactState extends State<Contact> {
   }
 
   goFriendNotice() {
-
+    Global.navigatorKey.currentState.push(
+      MaterialPageRoute(
+        builder: (context) => FriendNotice(),
+      ),
+    );
   }
 
   goGroup() {
-
+    Global.navigatorKey.currentState.push(
+      MaterialPageRoute(
+        builder: (context) => BlackList(),
+      ),
+    );
   }
 
   goBlackList() {

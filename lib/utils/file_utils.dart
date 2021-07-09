@@ -46,6 +46,17 @@ class FileUtils {
       return null;
     }
   }
+
+  /// 格式化文件大小
+  static String formatFileSize(int size) {
+    return '${(size/1024/1024).toStringAsFixed(2)} MB';
+  }
+
+  /// 文件下载
+  static Future<dynamic> downloadFile()  async {
+    Duration(seconds: 3);
+    return 1;
+  }
 }
 
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:push_im_demo/widgets/loading.dart';
 
 class Mine extends StatefulWidget {
   const Mine({Key key}) : super(key: key);
@@ -19,7 +20,9 @@ class _MineState extends State<Mine> {
       body: Container(
         color: Color(0xFFf4f4f4),
         width: double.infinity,
-        child: Container(),
+        child: Container(
+          child: MyLoading(),
+        ),
       ),
     );
   }

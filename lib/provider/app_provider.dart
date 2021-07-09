@@ -11,11 +11,16 @@ class AppProvider with ChangeNotifier {
     if(data != null) {
       return data;
     }
+    _themeColorKey = 'blue';
     return _themeColorKey;
   }
 
   /// 主题颜色map
   Map<String, Map<String, Color>> themeColorMap = {
+    'teal': {
+      'primaryColor': Colors.teal,
+      'cardColor': Colors.white,
+    },
     'gray': {
       'primaryColor': Colors.grey,
       'cardColor': Colors.white,

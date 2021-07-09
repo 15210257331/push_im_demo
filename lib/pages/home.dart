@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/pages/contact/contact.dart';
 import 'package:push_im_demo/pages/conversation/conversation.dart';
+import 'package:push_im_demo/pages/mine/mine.dart';
 import 'package:push_im_demo/pages/news/news.dart';
 import 'package:push_im_demo/provider/conversation_provider.dart';
 import 'package:push_im_demo/provider/contact_provider.dart';
@@ -241,7 +242,8 @@ class HomeState extends State<Home> {
         children: <Widget>[
           Conversation(),
           Contact(),
-          News(),
+          Mine(),
+          // News(),
         ],
         index: _tabIndex,
       ),
@@ -259,8 +261,8 @@ class HomeState extends State<Home> {
         items: [
           BottomNavigationBarItem(
               label: '聊天',
-              icon: Icon(Icons.notifications, color: Colors.grey),
-              activeIcon: Icon(Icons.notifications, color: Theme.of(context).primaryColor)
+              icon: Icon(Icons.message_rounded, color: Colors.grey),
+              activeIcon: Icon(Icons.message_rounded, color: Theme.of(context).primaryColor)
           ),
           BottomNavigationBarItem(
               label: '联系人',
@@ -268,7 +270,7 @@ class HomeState extends State<Home> {
               activeIcon: Icon(Icons.supervisor_account_sharp, color: Theme.of(context).primaryColor)
           ),
           BottomNavigationBarItem(
-              label: '新闻',
+              label: '我的',
               icon: Icon(Icons.sentiment_very_satisfied, color: Colors.grey),
               activeIcon: Icon(Icons.sentiment_very_satisfied, color: Theme.of(context).primaryColor)
           ),

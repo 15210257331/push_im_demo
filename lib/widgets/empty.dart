@@ -7,7 +7,7 @@ class Empty extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: Center(
-        child: Text('空空如也！'),
+        child: Text('空的，嘿嘿！'),
       ),
     );
   }

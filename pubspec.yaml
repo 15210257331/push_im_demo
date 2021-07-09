@@ -53,6 +53,9 @@ dependencies:
   # lottie 动画
   lottie: ^0.7.0+1
 
+  # 生成二维码
+  qr_flutter: ^4.0.0
+
   # 图片选择
   image_picker: ^0.6.7+22
 
@@ -69,7 +72,7 @@ dependencies:
   video_player: 1.0.0
 
   # 音频播放
-  audioplayers: ^0.16.0
+#  audioplayers: ^0.16.0
 
   # 侧边滑动
   flutter_slidable: ^0.5.7
@@ -78,7 +81,7 @@ dependencies:
   share: ^0.6.4
 
   # 设备信息
-  device_info: ^0.4.2+3
+  device_info: ^1.0.0
 
   # 包信息
   package_info: ^0.4.0+18

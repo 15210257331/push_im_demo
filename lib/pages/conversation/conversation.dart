@@ -3,17 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import 'package:push_im_demo/pages/contact/add_friend.dart';
 import 'package:push_im_demo/pages/conversation/conversation_detail.dart';
 import 'package:push_im_demo/pages/drawer/drawer.dart';
 import 'package:push_im_demo/provider/conversation_provider.dart';
 import 'package:push_im_demo/utils/date_utls.dart';
-import 'package:push_im_demo/widgets/scan_page.dart';
 import 'package:tencent_im_sdk_plugin/enum/message_elem_type.dart';
 import 'package:tencent_im_sdk_plugin/models/v2_tim_conversation.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_conversation_result.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_message.dart';
-import 'package:tencent_im_sdk_plugin/models/v2_tim_value_callback.dart';
-import 'package:tencent_im_sdk_plugin/tencent_im_sdk_plugin.dart';
 
 class Conversation extends StatefulWidget {
   @override
@@ -129,28 +125,44 @@ class _ConversationState extends State<Conversation> {
 
   Widget buildPopupMenuButton() {
     return PopupMenuButton<String>(
+        color: Theme.of(context).primaryColor,
         offset: Offset(0, 40),
         icon: Icon(Icons.add, size: 28,),
         itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
           PopupMenuItem<String>(
               value: '1',
-              child: new Text('添加朋友')
+              child: Text('添加朋友',
+                style: TextStyle(
+                  color: Colors.white
+                ),
+              )
           ),
           PopupMenuItem<String>(
               value: '2',
-              child: new Text('发起群聊')
+              child: Text('发起群聊',
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
           ),
           PopupMenuItem<String>(
               value: '3',
-              child: new Text('扫一扫')
+              child: Text('扫一扫',
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
           ),
         ],
         onSelected: (String value) {
           print(value);
           if(value == '3') {
+            print('扫码');
+          }
+          if(value == '1') {
             Navigator.push(context, MaterialPageRoute(
                 builder: (context) {
-                  return ScanPage();
+                  return AddFriend();
                 }
             ));
           }

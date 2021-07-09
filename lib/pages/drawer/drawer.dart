@@ -6,6 +6,7 @@ import 'package:push_im_demo/pages/login.dart';
 import 'package:push_im_demo/provider/app_provider.dart';
 import 'package:push_im_demo/provider/contact_provider.dart';
 import 'package:push_im_demo/utils/storage.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class DrawerPage extends StatefulWidget {
   @override
@@ -40,49 +41,39 @@ class _DrawerState extends State<DrawerPage> {
   }
 
   Widget buildHeader() {
-    return Consumer<ContactProvider>(builder: (context, userInfoProvider, _) {
-          return DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              // image: DecorationImage(
-              //   image: AssetImage("assets/images/drawer_bg.jpeg"),
-              //   fit: BoxFit.fill
-              // )
-            ),
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.only(top:0),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 35,
-                    backgroundImage: NetworkImage(Global?.userInfo?.avatar),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Text(Global?.userInfo?.englishName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Text('userId:${Global?.userInfo?.id}',
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
-                  )
-                ],
-              ),
-            )
-          );
-        }
+    return UserAccountsDrawerHeader(
+      decoration: BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage("assets/images/bg.png"),
+              fit: BoxFit.cover
+          )
+      ),
+      currentAccountPicture: CircleAvatar(
+        backgroundImage:NetworkImage(Global?.userInfo?.avatar),
+      ),
+      //别的用户头像，直接用方块代替
+      otherAccountsPictures: [
+        CircleAvatar(
+          backgroundImage:NetworkImage(Global?.userInfo?.avatar),
+        ),
+        CircleAvatar(
+          backgroundImage:NetworkImage(Global?.userInfo?.avatar),
+        )
+      ],
+      accountName: Text(Global?.userInfo?.englishName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white
+        ),
+      ),
+      accountEmail: Text(Global?.userInfo?.email),
+      arrowColor: Colors.yellow,
+      onDetailsPressed: (){
+        print("点击了内容");
+      },
     );
   }
 
@@ -169,15 +160,17 @@ class _DrawerState extends State<DrawerPage> {
             height: 1,
             color: Colors.grey,
           ),
-          GestureDetector(
-            onTap: () {
-
-            },
-            child: ListTile(
-              leading: Icon(Icons.settings_system_daydream_outlined),
-              title: Text('我的二维码'),
-              trailing: Icon(Icons.chevron_right),
-            ),
+          ExpansionTile(
+            leading: Icon(Icons.qr_code),
+            title: Text('我的二维码'),
+            initiallyExpanded: false,
+            children: [
+              QrImage(
+                data: '${Global?.userInfo?.id}',
+                version: QrVersions.auto,
+                size: 200.0,
+              ),
+            ],
           ),
         ],
       ),
