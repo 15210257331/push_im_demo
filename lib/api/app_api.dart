@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:push_im_demo/model/update.dart';
-import 'package:push_im_demo/utils/http.dart';
+import 'package:push_im_demo/api/http.dart';
 
 /// 系统相关
 class AppApi {

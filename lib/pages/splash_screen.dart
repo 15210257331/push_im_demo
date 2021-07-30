@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       body: Lottie.asset(
-        'assets/json/admin-lottie.json',
+        'assets/json/flying-rocket-lottie.json',
         controller: _controller,
         height: MediaQuery.of(context).size.height * 1,
         animate: true,

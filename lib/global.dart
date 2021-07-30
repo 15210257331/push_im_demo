@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
 import 'package:push_im_demo/config.dart';
 import 'package:push_im_demo/model/user_info.dart';
-import 'package:push_im_demo/utils/http.dart';
+import 'package:push_im_demo/api/http.dart';
 import 'package:push_im_demo/utils/storage.dart';
 import 'package:tpns_flutter_plugin/tpns_flutter_plugin.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:push_im_demo/model/user_info.dart';
-import 'package:push_im_demo/utils/http.dart';
+import 'package:push_im_demo/api/http.dart';
 
 /// 用户相关接口
 class UserAPI {

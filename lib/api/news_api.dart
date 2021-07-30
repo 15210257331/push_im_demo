@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:push_im_demo/utils/http.dart';
+import 'package:push_im_demo/api/http.dart';
 
 /// 新闻相关接口
 class NewsAPI {

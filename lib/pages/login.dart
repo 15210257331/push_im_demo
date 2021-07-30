@@ -1,15 +1,15 @@
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:provider/provider.dart';
 import 'package:push_im_demo/api/user_api.dart';
 import 'package:push_im_demo/global.dart';
 import 'package:push_im_demo/model/user_info.dart';
 import 'package:push_im_demo/pages/home.dart';
 import 'package:push_im_demo/utils/storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert' as convert;
 import 'package:bling_extensions/bling_extensions.dart';
+import 'package:video_player/video_player.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -26,9 +26,28 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   // 密码
   final TextEditingController _passController = TextEditingController();
 
+  VideoPlayerController _controller;
+
+  ChewieController chewieController;
+
   @override
   void initState() {
     super.initState();
+    _controller = VideoPlayerController.asset(
+      'assets/videos/login_bg.mp4',
+    )..initialize().then(
+          (value) => {
+            chewieController = ChewieController(
+              videoPlayerController: _controller,
+              allowPlaybackSpeedChanging: false,
+              showControls: false,
+              autoPlay: true,
+              looping: true,
+            ),
+        _controller.play(),
+        setState(() {}),
+      },
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setLastTimeContent();
     });
@@ -93,131 +112,176 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: AnnotatedRegion(
-          value: SystemUiOverlayStyle.dark,
-          child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Container(
-              color: Colors.white,
-              height: MediaQuery.of(context).size.height,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  buildLogo(),
-                  _buildLoginForm(),
-                  buildSubmitSection(),
-                  buildAgreement()
-                ],
-              )
-            ),
+          value: SystemUiOverlayStyle.light,
+          child: Stack(
+            fit: StackFit.expand,
+            children: <Widget>[
+              Transform.scale(
+                scale: _controller.value.aspectRatio /
+                    MediaQuery.of(context).size.aspectRatio,
+                child: Center(
+                  child: Container(
+                    child: _controller.value.initialized
+                        ? AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: Chewie(controller: chewieController),
+                    )
+                        : Container(),
+                  ),
+                ),
+              ),
+              Positioned(
+                  child: Container(
+                      color: Color(0x3FFFFFFF),
+                      child: SafeArea(
+                        child: GestureDetector(
+                          onTap: () => FocusScope.of(context).unfocus(),
+                          child: Container(
+                            padding: EdgeInsets.only(
+                                left: 30, right: 30, top: 30, bottom: 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                buildLogo(),
+                                buildTitle(),
+                                _buildLoginForm(),
+                                _buildLoginBtn(),
+                                buildAgreement()
+                              ],
+                            ),
+                          ),
+                        ),
+                      )))
+            ],
           ),
         ));
   }
 
-  /// 构建logo
+  Widget buildTitle() {
+    return Container(
+      margin: EdgeInsets.only(bottom: 40),
+      child: Text(
+        "Changing the way \nonline English is done",
+        textAlign: TextAlign.left,
+        style: TextStyle(
+            height: 1.6,
+            fontSize: 26,
+            color: Colors.white,
+            fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
   Widget buildLogo() {
     return Container(
-      margin: EdgeInsets.only(top: 120, bottom: 90),
+      margin: EdgeInsets.only(bottom: 40),
       child: Image.asset("assets/images/logo.png",
-          fit: BoxFit.cover
-      ),
+          width: 160, height: 27, fit: BoxFit.cover),
     );
   }
 
   /// 构建登录表单区域
   Widget _buildLoginForm() {
     return Container(
-      padding: EdgeInsets.only(left: 20,right: 20),
+      margin: EdgeInsets.only(bottom: 40),
       child: Column(
         children: <Widget>[
           TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(10, 0, 10, 15),
-                prefixIcon: Icon(Icons.local_phone_outlined, color: Colors.black12),
-                suffixIcon: Icon(Icons.close_rounded, color: Colors.black12).onTap(() {
-                  _emailController.clear();
-                }),
-                fillColor: Color(0xffF4F4F4),
-                hintText: 'email',
-                hintStyle: TextStyle(
-                  color: Colors.black12
+            controller: _emailController,
+            style: TextStyle(color: Colors.white, fontSize: 15),
+            onChanged: (text) {},
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.all(18),
+              suffixIcon: Image.asset(
+                "assets/images/ico_clear.png",
+                scale: 1.5,
+              ).onTap(() {
+                _emailController.clear();
+              }),
+              fillColor: Color(0x33FFFFFF),
+              hintText: 'Email address',
+              hintStyle: TextStyle(color: Color(0x66FFFFFF)),
+              filled: true,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(30), //边角为5
                 ),
-                filled: true,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(15), //边角为5
-                  ),
-                  borderSide: BorderSide(
-                    color: Colors.white, //边线颜色为白色
-                    width: 1, //边线宽度为2
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.white, //边框颜色为白色
-                    width: 1, //宽度为5
-                  ),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(15), //边角为30
-                  ),
+                borderSide: BorderSide(
+                  color: Color(0x33FFFFFF), //边线颜色为白色
+                  width: 1, //边线宽度为2
                 ),
               ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.white, //边框颜色为白色
+                  width: 1, //宽度为5
+                ),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(30), //边角为30
+                ),
+              ),
+            ),
           ),
           SizedBox(height: 30),
           ValueListenableBuilder(
             valueListenable: _showPassNotifier,
             builder: (context, flag, _) {
               return TextField(
+                style: TextStyle(color: Colors.white, fontSize: 15),
                 keyboardType: TextInputType.text,
                 obscureText: flag ? false : true,
                 controller: _passController,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.fromLTRB(10, 0, 10, 15),
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.black12),
-                    suffixIcon: _buildSuffixIcon(),
-                    fillColor: Color(0xffF4F4F4),
-                    hintText: 'password',
-                    hintStyle: TextStyle(
-                        color: Colors.black12
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.all(18),
+                  suffixIcon: _buildSuffixIcon(),
+                  fillColor: Color(0x33FFFFFF),
+                  hintText: 'Password',
+                  hintStyle: TextStyle(color: Color(0x66FFFFFF)),
+                  filled: true,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(30), //边角为5
                     ),
-                    filled: true,
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(15), //边角为5
-                      ),
-                      borderSide: BorderSide(
-                        color: Colors.white, //边线颜色为白色
-                        width: 1, //边线宽度为2
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.white, //边框颜色为白色
-                        width: 1, //宽度为5
-                      ),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(15), //边角为30
-                      ),
+                    borderSide: BorderSide(
+                      color: Color(0x33FFFFFF),
+                      width: 1, //边线宽度为2
                     ),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white,
+                      width: 1, //宽度为5
+                    ),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(30), //边角为30
+                    ),
+                  ),
+                ),
               );
             },
           ),
-          Container(
-            margin: EdgeInsets.only(top: 10,right: 5),
-            alignment: Alignment.bottomRight,
-            child: Text('忘记密码',
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.blueAccent
-              ),
-            ),
-          )
         ],
       ),
     );
+  }
+
+  /// 登录按钮
+  Widget _buildLoginBtn() {
+    return Container(
+      margin: EdgeInsets.only(),
+      width: double.infinity,
+      alignment: AlignmentDirectional.center,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Color(0xff7357FF),
+        borderRadius: BorderRadius.all(Radius.circular(30)),
+      ),
+      child: Text(
+        'Log In',
+        style: TextStyle(
+            color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+      ),
+    ).onTap(() => login());
   }
 
   /// 密码框后缀图标
@@ -226,39 +290,21 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
       valueListenable: _showPassNotifier,
       builder: (context, flag, _) {
         if (flag) {
-          return Icon(Icons.remove_red_eye_outlined,color: Colors.black12);
+          return Image.asset(
+            "assets/images/eye_open.png",
+            scale: 1.5,
+          );
         } else {
-          return Icon(Icons.remove_red_eye_rounded, color: Colors.black12);
+          return Image.asset(
+            "assets/images/eye_close.png",
+            scale: 1.5,
+          );
         }
       },
     ).onTap(() => _showPassNotifier.value = !_showPassNotifier.value,
-        tapInterval: 200);
+        tapInterval: 100);
   }
 
-  /// 构建登录按钮区域
-  Widget buildSubmitSection() {
-    return GestureDetector(
-        onTap: () async {
-          await login();
-        },
-        child: Padding(
-          padding: const EdgeInsets.only(top: 50),
-          child: Container(
-            alignment: AlignmentDirectional.center,
-            width: 315,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Color(0xff7357FF),
-              borderRadius: BorderRadius.all(Radius.circular(25)),
-            ),
-            child: Text(
-              'Log In',
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          ),
-        )
-    );
-  }
 
   /// 构建用户协议
   Widget buildAgreement() {
@@ -266,7 +312,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
       child: Container(
         margin: EdgeInsets.only(top: 10,bottom: 40),
         alignment: Alignment.bottomCenter,
-        child: Text('《 用户协议 》',
+        child: Text('《用户协议》',
           textAlign: TextAlign.end,
           style: TextStyle(
               fontSize: 14,

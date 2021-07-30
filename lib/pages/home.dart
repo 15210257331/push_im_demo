@@ -242,8 +242,8 @@ class HomeState extends State<Home> {
         children: <Widget>[
           Conversation(),
           Contact(),
+          News(),
           Mine(),
-          // News(),
         ],
         index: _tabIndex,
       ),
@@ -261,13 +261,18 @@ class HomeState extends State<Home> {
         items: [
           BottomNavigationBarItem(
               label: '聊天',
-              icon: Icon(Icons.message_rounded, color: Colors.grey),
-              activeIcon: Icon(Icons.message_rounded, color: Theme.of(context).primaryColor)
+              icon: Icon(Icons.message_outlined, color: Colors.grey),
+              activeIcon: Icon(Icons.message_outlined, color: Theme.of(context).primaryColor)
           ),
           BottomNavigationBarItem(
               label: '联系人',
               icon: Icon(Icons.supervisor_account_sharp, color: Colors.grey),
               activeIcon: Icon(Icons.supervisor_account_sharp, color: Theme.of(context).primaryColor)
+          ),
+          BottomNavigationBarItem(
+              label: '动态',
+              icon: Icon(Icons.alternate_email_outlined, color: Colors.grey),
+              activeIcon: Icon(Icons.alternate_email_outlined, color: Theme.of(context).primaryColor)
           ),
           BottomNavigationBarItem(
               label: '我的',

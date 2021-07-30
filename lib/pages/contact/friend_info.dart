@@ -93,26 +93,28 @@ class _ContactDetailState extends State<FriendInfo> {
           SizedBox(
             width: 15,
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(friendInfo?.userProfile?.nickName ?? '',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 26
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Text('用户ID：${friendInfo?.userProfile?.userID}'),
-              SizedBox(
-                height: 5,
-              ),
-              Text('个性签名：${friendInfo?.userProfile?.selfSignature}'),
-            ],
-          )
+          Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(friendInfo?.userProfile?.nickName ?? '',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 26
+                    ),
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Text('用户ID：${friendInfo?.userProfile?.userID}'),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Text('个性签名：${friendInfo?.userProfile?.selfSignature}'),
+                ],
+              )
+          ),
         ],
       ),
     );

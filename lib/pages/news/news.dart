@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:push_im_demo/api/news_api.dart';
 import 'package:push_im_demo/pages/drawer/drawer.dart';
+import 'package:push_im_demo/pages/news/dynamic.dart';
 import 'package:push_im_demo/pages/news/news_list.dart';
 
 class News extends StatefulWidget {
@@ -11,18 +12,8 @@ class News extends StatefulWidget {
 class _NewsState extends State<News> with SingleTickerProviderStateMixin {
 
   Map<String, String> newsType = {
-    '推荐': 'top',
-    '国内': 'guonei',
-    '国际': 'guoji',
-    '娱乐': 'yule',
-    '体育': 'tiyu',
-    '军事': 'junshi',
-    '科技': 'keji',
-    '财经': 'caijing',
-    '时尚': 'shishang',
-    '游戏': 'youxi',
-    '汽车': 'qiche',
-    '健康': 'jiankang',
+    '动态': 'game_inf',
+    '新闻': 'hot_video',
   };
 
   List<dynamic> newsList = [];
@@ -40,14 +31,14 @@ class _NewsState extends State<News> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('新闻'),
+        title: Text('动态'),
         // backgroundColor: Colors.blueAccent,
         brightness: Brightness.dark,
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
           tabs: newsType.keys.map((e) => Tab(text: e)).toList(),
-          isScrollable: true,
+          isScrollable: false,
           indicatorColor: Colors.red,
           indicatorWeight: 2,
           indicatorSize: TabBarIndicatorSize.label,
@@ -60,12 +51,10 @@ class _NewsState extends State<News> with SingleTickerProviderStateMixin {
       drawer: DrawerPage(),
       body: TabBarView(
         controller: _tabController,
-        children: newsType.keys.map((e) {
-          return Container(
-            alignment: Alignment.center,
-            child: NewsList(newsType[e]),
-          );
-        }).toList(),
+        children: [
+          Dynamic(),
+          NewsList(newsType['新闻']),
+        ]
       ),
     );
   }
